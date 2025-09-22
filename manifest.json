@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "치지직 롤 티어 표시",
+  "version": "1.0",
+  "description": "치지직 채팅창에 롤 티어를 표시합니다",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.chzzk.naver.com/*", 
+        "*://studio.chzzk.naver.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ],
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["*.js", "*.css"],
+      "matches": ["*://*.chzzk.naver.com/*"]
+    }
+  ]
+}
