@@ -16,6 +16,10 @@
       "128": "icon128.png"
     }
   },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -29,10 +33,19 @@
   ],
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "identity",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "*://*.riotgames.com/*",
+    "*://*.chzzk.naver.com/*",
+    "*://localhost:*/*",
+    "*://*.vercel.app/*",
+    "*://*.leagueoflegends.com/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https://ddragon.leagueoflegends.com"
   },
   "web_accessible_resources": [
     {
