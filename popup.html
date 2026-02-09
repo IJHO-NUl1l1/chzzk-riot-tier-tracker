@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>LoL Tier Info</title>
+  <title>Riot Tier Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,79 +15,155 @@
 </head>
 <body>
   <div id="app">
-    <h1>LoL Tier Info</h1>
-    
-    <div class="card">
-      <div class="card-title">Riot ID Lookup</div>
-      <div class="card-content">
-        <div class="form-group">
-          <label for="region-select">Select Region</label>
-          <select id="region-select">
-            <option value="">Select Region</option>
-            <option value="kr">Korea (KR)</option>
-            <option value="jp">Japan (JP)</option>
-            <option value="na">North America (NA)</option>
-            <option value="euw">Europe West (EUW)</option>
-            <option value="eune">Europe Nordic & East (EUNE)</option>
-            <option value="br">Brazil (BR)</option>
-          </select>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group form-group-large">
-            <label for="summoner-name-input">Summoner Name</label>
-            <input type="text" id="summoner-name-input" placeholder="Enter summoner name">
-          </div>
-          
-          <div class="form-group form-group-small">
-            <label for="tag-line-input">Tag Line</label>
-            <input type="text" id="tag-line-input" placeholder="KR1">
-          </div>
-        </div>
-        
-        <button id="connect-riot">Lookup Summoner</button>
-        
-        <div id="riot-status-message" class="status-message"></div>
-      </div>
+    <h1>Riot Tier Tracker</h1>
+
+    <!-- Game Tab Navigation -->
+    <div class="tab-nav">
+      <button id="tab-lol" class="tab-btn active" data-tab="lol">LoL</button>
+      <button id="tab-tft" class="tab-btn" data-tab="tft">TFT</button>
     </div>
-    
-    <div id="summoner-info" class="card">
-      <div class="card-title">
-        Summoner Info
+
+    <!-- LoL Tab Content -->
+    <div id="lol-content" class="tab-content active">
+      <div class="card">
+        <div class="card-title">Riot ID Lookup</div>
+        <div class="card-content">
+          <div class="form-group">
+            <label for="region-select">Select Region</label>
+            <select id="region-select">
+              <option value="">Select Region</option>
+              <option value="kr">Korea (KR)</option>
+              <option value="jp">Japan (JP)</option>
+              <option value="na">North America (NA)</option>
+              <option value="euw">Europe West (EUW)</option>
+              <option value="eune">Europe Nordic &amp; East (EUNE)</option>
+              <option value="br">Brazil (BR)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group-large">
+              <label for="summoner-name-input">Summoner Name</label>
+              <input type="text" id="summoner-name-input" placeholder="Enter summoner name">
+            </div>
+
+            <div class="form-group form-group-small">
+              <label for="tag-line-input">Tag Line</label>
+              <input type="text" id="tag-line-input" placeholder="KR1">
+            </div>
+          </div>
+
+          <button id="connect-riot">Lookup Summoner</button>
+
+          <div id="riot-status-message" class="status-message"></div>
+        </div>
       </div>
-      <div class="card-content">
-        <!-- 숨겨진 PUUID 요소 -->
-        <span id="summoner-name" style="display: none;"></span>
-        <div class="info-container">
-          <div class="info-row">
-            <span class="info-label">Tier:</span>
-            <div class="info-value">
-              <div class="tier-container">
-                <img id="tier-image" class="tier-image" src="images/tiers/unranked.png" alt="Tier">
-                <div class="tier-text">
-                  <div class="tier-row">
-                    <span id="tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
-                    <span id="tier-lp">-</span>
+
+      <div id="summoner-info" class="card">
+        <div class="card-title">Summoner Info</div>
+        <div class="card-content">
+          <span id="summoner-name" style="display: none;"></span>
+          <div class="info-container">
+            <div class="info-row">
+              <span class="info-label">Tier:</span>
+              <div class="info-value">
+                <div class="tier-container">
+                  <img id="tier-image" class="tier-image" src="images/tiers/unranked.png" alt="Tier">
+                  <div class="tier-text">
+                    <div class="tier-row">
+                      <span id="tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
+                      <span id="tier-lp">-</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <div class="info-row">
+              <span class="info-label">Win/Loss:</span>
+              <span id="win-loss" class="info-value">-</span>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">Win Rate:</span>
+              <span id="win-rate" class="info-value">-</span>
+            </div>
           </div>
-          
-          <div class="info-row">
-            <span class="info-label">Win/Loss:</span>
-            <span id="win-loss" class="info-value">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TFT Tab Content -->
+    <div id="tft-content" class="tab-content">
+      <div class="card">
+        <div class="card-title">Riot ID Lookup</div>
+        <div class="card-content">
+          <div class="form-group">
+            <label for="tft-region-select">Select Region</label>
+            <select id="tft-region-select">
+              <option value="">Select Region</option>
+              <option value="kr">Korea (KR)</option>
+              <option value="jp">Japan (JP)</option>
+              <option value="na">North America (NA)</option>
+              <option value="euw">Europe West (EUW)</option>
+              <option value="eune">Europe Nordic &amp; East (EUNE)</option>
+              <option value="br">Brazil (BR)</option>
+            </select>
           </div>
-          
-          <div class="info-row">
-            <span class="info-label">Win Rate:</span>
-            <span id="win-rate" class="info-value">-</span>
+
+          <div class="form-row">
+            <div class="form-group form-group-large">
+              <label for="tft-summoner-name-input">Summoner Name</label>
+              <input type="text" id="tft-summoner-name-input" placeholder="Enter summoner name">
+            </div>
+
+            <div class="form-group form-group-small">
+              <label for="tft-tag-line-input">Tag Line</label>
+              <input type="text" id="tft-tag-line-input" placeholder="KR1">
+            </div>
+          </div>
+
+          <button id="connect-tft">Lookup Summoner</button>
+
+          <div id="tft-status-message" class="status-message"></div>
+        </div>
+      </div>
+
+      <div id="tft-summoner-info" class="card">
+        <div class="card-title">Summoner Info</div>
+        <div class="card-content">
+          <span id="tft-summoner-name" style="display: none;"></span>
+          <div class="info-container">
+            <div class="info-row">
+              <span class="info-label">Tier:</span>
+              <div class="info-value">
+                <div class="tier-container">
+                  <img id="tft-tier-image" class="tier-image" src="images/tiers/unranked.png" alt="Tier">
+                  <div class="tier-text">
+                    <div class="tier-row">
+                      <span id="tft-tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
+                      <span id="tft-tier-lp">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">Win/Loss:</span>
+              <span id="tft-win-loss" class="info-value">-</span>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">Win Rate:</span>
+              <span id="tft-win-rate" class="info-value">-</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
+
   <script type="module" src="popup.js"></script>
 </body>
 </html>

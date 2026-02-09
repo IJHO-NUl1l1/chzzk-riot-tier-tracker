@@ -1,17 +1,17 @@
-# Chzzk LoL Tier 크롬 익스텐션
+# Chzzk Riot Tier Tracker 크롬 익스텐션
 
-치지직(Chzzk) 채팅창에서 사용자의 리그 오브 레전드 티어 정보를 표시해주는 크롬 익스텐션입니다.
+치지직(Chzzk) 채팅창에서 사용자의 LoL/TFT 티어 정보를 표시해주는 크롬 익스텐션입니다.
 
 ## 기능
 
 - 소환사 이름과 태그라인으로 계정 검색
-- 소환사의 랭크 정보 표시 (티어, LP, 승/패, 승률)
+- LoL/TFT 랭크 정보 표시 (티어, LP, 승/패, 승률)
 - 치지직 채팅창에 티어 배지 표시
 
 ## 프로젝트 구조
 
 ```
-chzzk-lol-tier/
+chzzk-riot-tier-tracker/
 ├── js/                     # JavaScript 모듈
 │   ├── api/                # API 통신 모듈
 │   │   ├── index.js        # API 모듈 통합
@@ -63,7 +63,7 @@ development: {
 
 // 프로덕션 환경 (배포된 서버)
 production: {
-  baseUrl: 'https://chzzk-lol-tier-server.vercel.app/api/riot',
+  baseUrl: 'https://chzzk-riot-tier-tracker-server.vercel.app/api/riot',
   timeout: 30000 // 30초
 }
 ```
@@ -72,7 +72,7 @@ production: {
 
 1. 저장소 클론:
    ```
-   git clone https://github.com/username/chzzk-lol-tier.git
+   git clone https://github.com/username/chzzk-riot-tier-tracker.git
    ```
 
 2. 크롬 익스텐션으로 로드:
