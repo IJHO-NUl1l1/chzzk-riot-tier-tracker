@@ -139,6 +139,7 @@ function updateUIWithSummonerData() {
       tierBadgeElement.textContent = `${tier} ${rank}`;
       tierBadgeElement.style.backgroundColor = getTierColor(tier);
       tierImageElement.src = getTierImageUrl(tier);
+      tierImageElement.hidden = false;
       tierLpElement.textContent = soloRank.tier ? `${soloRank.leaguePoints} LP` : '';
       const wins = soloRank.wins || 0;
       const losses = soloRank.losses || 0;
@@ -149,7 +150,7 @@ function updateUIWithSummonerData() {
   } else {
     tierBadgeElement.textContent = 'UNRANKED';
     tierBadgeElement.style.backgroundColor = getTierColor('UNRANKED');
-    tierImageElement.src = getTierImageUrl('UNRANKED');
+    tierImageElement.hidden = true;
     tierLpElement.textContent = '';
     winLossElement.textContent = '-';
     winRateElement.textContent = '-';
@@ -179,7 +180,6 @@ async function handleTftLookup() {
     connectBtn.disabled = true;
     showStatusMessage(statusMessage, 'Looking up TFT info...', 'info');
 
-    // TFT 키로 Account 조회 → PUUID 획득
     const accountInfo = await api.tft.getAccountByRiotId(gameName, tagLine, region);
     if (accountInfo.error) throw new Error(accountInfo.error);
 
@@ -221,7 +221,6 @@ function updateUIWithTftData() {
   const winRateElement = document.getElementById('tft-win-rate');
 
   if (tftRankData && tftRankData.length > 0) {
-    // TFT ranked queue type: RANKED_TFT
     const tftRank = tftRankData.find(rank => rank.queueType === 'RANKED_TFT') || tftRankData[0];
     if (tftRank) {
       const tier = tftRank.tier || 'UNRANKED';
@@ -229,6 +228,7 @@ function updateUIWithTftData() {
       tierBadgeElement.textContent = `${tier} ${rank}`;
       tierBadgeElement.style.backgroundColor = getTierColor(tier);
       tierImageElement.src = getTierImageUrl(tier);
+      tierImageElement.hidden = false;
       tierLpElement.textContent = tftRank.tier ? `${tftRank.leaguePoints} LP` : '';
       const wins = tftRank.wins || 0;
       const losses = tftRank.losses || 0;
@@ -239,7 +239,7 @@ function updateUIWithTftData() {
   } else {
     tierBadgeElement.textContent = 'UNRANKED';
     tierBadgeElement.style.backgroundColor = getTierColor('UNRANKED');
-    tierImageElement.src = getTierImageUrl('UNRANKED');
+    tierImageElement.hidden = true;
     tierLpElement.textContent = '';
     winLossElement.textContent = '-';
     winRateElement.textContent = '-';
