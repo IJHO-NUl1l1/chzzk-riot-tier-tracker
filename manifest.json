@@ -4,16 +4,16 @@
   "version": "1.0",
   "description": "치지직 채팅창에 LoL/TFT 티어를 표시합니다",
   "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "16": "images/logo.png",
+    "48": "images/logo.png",
+    "128": "images/logo.png"
   },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
+      "16": "images/logo.png",
+      "48": "images/logo.png",
+      "128": "images/logo.png"
     }
   },
   "background": {
