@@ -13,20 +13,212 @@
   <div id="app">
     <h1>Riot Tier Tracker</h1>
 
-    <div class="tab-nav">
-      <button id="tab-lol" class="tab-btn active" data-tab="lol">LoL</button>
-      <button id="tab-tft" class="tab-btn" data-tab="tft">TFT</button>
+    <!-- Page: Home (Auth) -->
+    <div id="page-home" class="page active">
+      <div class="card">
+        <div class="card-title">Account Link</div>
+        <div class="card-content">
+          <div class="auth-section">
+            <div class="auth-status">
+              <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span id="auth-status-text">Not connected</span>
+            </div>
+
+            <div class="form-group">
+              <label for="chzzk-nickname-input">Chzzk Nickname</label>
+              <input type="text" id="chzzk-nickname-input" placeholder="Enter your Chzzk nickname">
+            </div>
+
+            <button id="btn-riot-login" class="btn-auth">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+              Connect Riot Account
+            </button>
+            <div id="auth-status-message" class="status-message"></div>
+          </div>
+
+          <div id="linked-info" class="linked-info" style="display: none;">
+            <div class="linked-row">
+              <span class="linked-label">Chzzk</span>
+              <span id="linked-chzzk" class="linked-value">-</span>
+            </div>
+            <div class="linked-row">
+              <span class="linked-label">Riot ID</span>
+              <span id="linked-riot" class="linked-value">-</span>
+            </div>
+            <div class="linked-row">
+              <span class="linked-label">Status</span>
+              <span id="linked-status" class="linked-value linked-verified">Verified</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- LoL -->
-    <div id="lol-content" class="tab-content active">
+    <!-- Page: Search -->
+    <div id="page-search" class="page">
+      <div class="tab-nav">
+        <button id="tab-lol" class="tab-btn active" data-tab="lol">LoL</button>
+        <button id="tab-tft" class="tab-btn" data-tab="tft">TFT</button>
+      </div>
+
+      <!-- LoL -->
+      <div id="lol-content" class="tab-content active">
+        <div class="card">
+          <div class="card-title">Riot ID Lookup</div>
+          <div class="card-content">
+            <div class="form-group">
+              <label for="region-select">Region</label>
+              <select id="region-select">
+                <option value="">Select Region</option>
+                <option value="kr">Korea (KR)</option>
+                <option value="jp">Japan (JP)</option>
+                <option value="na">North America (NA)</option>
+                <option value="euw">Europe West (EUW)</option>
+                <option value="eune">Europe Nordic &amp; East (EUNE)</option>
+                <option value="br">Brazil (BR)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group-large">
+                <label for="summoner-name-input">Summoner Name</label>
+                <input type="text" id="summoner-name-input" placeholder="Enter summoner name">
+              </div>
+              <div class="form-group form-group-small">
+                <label for="tag-line-input">Tag</label>
+                <input type="text" id="tag-line-input" placeholder="KR1">
+              </div>
+            </div>
+            <button id="connect-riot">Search</button>
+            <div id="riot-status-message" class="status-message"></div>
+          </div>
+        </div>
+
+        <div id="summoner-info" class="card">
+          <div class="card-title">Ranked Info</div>
+          <div class="card-content">
+            <span id="summoner-name" style="display: none;"></span>
+            <div class="info-container">
+              <div class="info-row">
+                <span class="info-label">Tier</span>
+                <div class="info-value">
+                  <div class="tier-container">
+                    <img id="tier-image" class="tier-image" src="" alt="Tier" hidden>
+                    <div class="tier-text">
+                      <div class="tier-row">
+                        <span id="tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
+                        <span id="tier-lp">-</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="info-row">
+                <span class="info-label">W / L</span>
+                <span id="win-loss" class="info-value">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Win Rate</span>
+                <span id="win-rate" class="info-value">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TFT -->
+      <div id="tft-content" class="tab-content">
+        <div class="card">
+          <div class="card-title">Riot ID Lookup</div>
+          <div class="card-content">
+            <div class="form-group">
+              <label for="tft-region-select">Region</label>
+              <select id="tft-region-select">
+                <option value="">Select Region</option>
+                <option value="kr">Korea (KR)</option>
+                <option value="jp">Japan (JP)</option>
+                <option value="na">North America (NA)</option>
+                <option value="euw">Europe West (EUW)</option>
+                <option value="eune">Europe Nordic &amp; East (EUNE)</option>
+                <option value="br">Brazil (BR)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group-large">
+                <label for="tft-summoner-name-input">Summoner Name</label>
+                <input type="text" id="tft-summoner-name-input" placeholder="Enter summoner name">
+              </div>
+              <div class="form-group form-group-small">
+                <label for="tft-tag-line-input">Tag</label>
+                <input type="text" id="tft-tag-line-input" placeholder="KR1">
+              </div>
+            </div>
+            <button id="connect-tft">Search</button>
+            <div id="tft-status-message" class="status-message"></div>
+          </div>
+        </div>
+
+        <div id="tft-summoner-info" class="card">
+          <div class="card-title">Ranked Info</div>
+          <div class="card-content">
+            <span id="tft-summoner-name" style="display: none;"></span>
+            <div class="info-container">
+              <div class="info-row">
+                <span class="info-label">Tier</span>
+                <div class="info-value">
+                  <div class="tier-container">
+                    <img id="tft-tier-image" class="tier-image" src="" alt="Tier" hidden>
+                    <div class="tier-text">
+                      <div class="tier-row">
+                        <span id="tft-tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
+                        <span id="tft-tier-lp">-</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="info-row">
+                <span class="info-label">W / L</span>
+                <span id="tft-win-loss" class="info-value">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Win Rate</span>
+                <span id="tft-win-rate" class="info-value">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page: Settings -->
+    <div id="page-settings" class="page">
       <div class="card">
-        <div class="card-title">Riot ID Lookup</div>
+        <div class="card-title">Settings</div>
         <div class="card-content">
-          <div class="form-group">
-            <label for="region-select">Region</label>
-            <select id="region-select">
-              <option value="">Select Region</option>
+          <div class="settings-item">
+            <span class="settings-label">Show badge in chat</span>
+            <label class="toggle">
+              <input type="checkbox" id="setting-show-badge" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Badge animation</span>
+            <label class="toggle">
+              <input type="checkbox" id="setting-animate-badge">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Default region</span>
+            <select id="setting-default-region" class="settings-select">
               <option value="kr">Korea (KR)</option>
               <option value="jp">Japan (JP)</option>
               <option value="na">North America (NA)</option>
@@ -35,116 +227,48 @@
               <option value="br">Brazil (BR)</option>
             </select>
           </div>
-          <div class="form-row">
-            <div class="form-group form-group-large">
-              <label for="summoner-name-input">Summoner Name</label>
-              <input type="text" id="summoner-name-input" placeholder="Enter summoner name">
-            </div>
-            <div class="form-group form-group-small">
-              <label for="tag-line-input">Tag</label>
-              <input type="text" id="tag-line-input" placeholder="KR1">
-            </div>
-          </div>
-          <button id="connect-riot">Search</button>
-          <div id="riot-status-message" class="status-message"></div>
         </div>
       </div>
 
-      <div id="summoner-info" class="card">
-        <div class="card-title">Ranked Info</div>
-        <div class="card-content">
-          <span id="summoner-name" style="display: none;"></span>
-          <div class="info-container">
-            <div class="info-row">
-              <span class="info-label">Tier</span>
-              <div class="info-value">
-                <div class="tier-container">
-                  <img id="tier-image" class="tier-image" src="" alt="Tier" hidden>
-                  <div class="tier-text">
-                    <div class="tier-row">
-                      <span id="tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
-                      <span id="tier-lp">-</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">W / L</span>
-              <span id="win-loss" class="info-value">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Win Rate</span>
-              <span id="win-rate" class="info-value">-</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TFT -->
-    <div id="tft-content" class="tab-content">
       <div class="card">
-        <div class="card-title">Riot ID Lookup</div>
+        <div class="card-title">About</div>
         <div class="card-content">
-          <div class="form-group">
-            <label for="tft-region-select">Region</label>
-            <select id="tft-region-select">
-              <option value="">Select Region</option>
-              <option value="kr">Korea (KR)</option>
-              <option value="jp">Japan (JP)</option>
-              <option value="na">North America (NA)</option>
-              <option value="euw">Europe West (EUW)</option>
-              <option value="eune">Europe Nordic &amp; East (EUNE)</option>
-              <option value="br">Brazil (BR)</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <div class="form-group form-group-large">
-              <label for="tft-summoner-name-input">Summoner Name</label>
-              <input type="text" id="tft-summoner-name-input" placeholder="Enter summoner name">
-            </div>
-            <div class="form-group form-group-small">
-              <label for="tft-tag-line-input">Tag</label>
-              <input type="text" id="tft-tag-line-input" placeholder="KR1">
-            </div>
-          </div>
-          <button id="connect-tft">Search</button>
-          <div id="tft-status-message" class="status-message"></div>
-        </div>
-      </div>
-
-      <div id="tft-summoner-info" class="card">
-        <div class="card-title">Ranked Info</div>
-        <div class="card-content">
-          <span id="tft-summoner-name" style="display: none;"></span>
-          <div class="info-container">
-            <div class="info-row">
-              <span class="info-label">Tier</span>
-              <div class="info-value">
-                <div class="tier-container">
-                  <img id="tft-tier-image" class="tier-image" src="" alt="Tier" hidden>
-                  <div class="tier-text">
-                    <div class="tier-row">
-                      <span id="tft-tier-badge" class="tier-badge" style="background-color: #444444;">-</span>
-                      <span id="tft-tier-lp">-</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">W / L</span>
-              <span id="tft-win-loss" class="info-value">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Win Rate</span>
-              <span id="tft-win-rate" class="info-value">-</span>
-            </div>
+          <div class="about-info">
+            <span class="about-label">Version</span>
+            <span class="about-value">0.1.0</span>
           </div>
         </div>
       </div>
     </div>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav-wrapper">
+    <nav class="bottom-nav">
+      <div class="nav-bubble"></div>
+      <button class="nav-item active" data-page="home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-page="search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <span>Search</span>
+    </button>
+    <button class="nav-item" data-page="settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span>Settings</span>
+    </button>
+    </nav>
   </div>
 
   <script type="module" src="popup.js"></script>

@@ -46,6 +46,45 @@ function showStatusMessage(element, message, type = '') {
   }
 }
 
+// ==================== Page Navigation ====================
+
+function setupPageNav() {
+  const navItems = document.querySelectorAll('.nav-item');
+  const bubble = document.querySelector('.nav-bubble');
+
+  function moveBubble(target) {
+    const nav = target.closest('.bottom-nav');
+    const navRect = nav.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const left = targetRect.left - navRect.left;
+    bubble.style.transform = `translateX(${left}px)`;
+    bubble.style.width = `${targetRect.width}px`;
+  }
+
+  // Initial position
+  const activeItem = document.querySelector('.nav-item.active');
+  if (activeItem && bubble) {
+    requestAnimationFrame(() => {
+      bubble.style.transition = 'none';
+      moveBubble(activeItem);
+      requestAnimationFrame(() => {
+        bubble.style.transition = '';
+      });
+    });
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const page = item.dataset.page;
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${page}`).classList.add('active');
+      moveBubble(item);
+    });
+  });
+}
+
 // ==================== Tab Navigation ====================
 
 function setupTabs() {
@@ -322,6 +361,9 @@ async function loadSavedTftData() {
 // ==================== Init ====================
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Page navigation
+  setupPageNav();
+
   // Tab navigation
   setupTabs();
 
