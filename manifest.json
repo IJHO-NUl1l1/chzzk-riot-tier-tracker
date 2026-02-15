@@ -34,7 +34,6 @@
   "permissions": [
     "storage",
     "tabs",
-    "identity",
     "webRequest"
   ],
   "host_permissions": [

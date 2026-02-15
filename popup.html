@@ -14,51 +14,60 @@
   <main id="app">
     <h1>Riot Tier Tracker</h1>
 
-    <!-- Page: Home (Auth) -->
+    <!-- Page: Home -->
     <section id="page-home" class="page active">
-      <div class="card">
-        <div class="card-title">Account Link</div>
-        <div class="card-content">
-          <div class="auth-section">
-            <div class="auth-status">
-              <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <span id="auth-status-text">Not connected</span>
-            </div>
+      <!-- Not connected -->
+      <div id="chzzk-disconnected" class="auth-card">
+        <div class="auth-card-visual">
+          <div class="auth-orb"></div>
+          <svg class="auth-logo" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <div class="auth-card-body">
+          <span class="auth-label">Chzzk Account</span>
+          <span class="auth-sublabel">Not connected</span>
+        </div>
+        <button type="button" id="btn-chzzk-login" class="btn-auth">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Connect
+        </button>
+        <p class="auth-hint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span>
+            1. 버튼을 누르면 로그인 창이 열리고 팝업이 닫힙니다<br>
+            2. 치지직에 로그인 상태면 자동 로그인 진행<br>
+            3. 이 팝업을 다시 열어 연동을 확인하세요
+          </span>
+        </p>
+      </div>
 
-            <div class="form-group">
-              <label for="chzzk-nickname-input">Chzzk Nickname</label>
-              <input type="text" id="chzzk-nickname-input" placeholder="Enter your Chzzk nickname">
-            </div>
-
-            <button type="button" id="btn-riot-login" class="btn-auth">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                <polyline points="10 17 15 12 10 7"></polyline>
-                <line x1="15" y1="12" x2="3" y2="12"></line>
-              </svg>
-              Connect Riot Account
-            </button>
-            <div id="auth-status-message" class="status-message" aria-live="polite"></div>
-          </div>
-
-          <div id="linked-info" class="linked-info" style="display: none;">
-            <div class="linked-row">
-              <span class="linked-label">Chzzk</span>
-              <span id="linked-chzzk" class="linked-value">-</span>
-            </div>
-            <div class="linked-row">
-              <span class="linked-label">Riot ID</span>
-              <span id="linked-riot" class="linked-value">-</span>
-            </div>
-            <div class="linked-row">
-              <span class="linked-label">Status</span>
-              <span id="linked-status" class="linked-value linked-verified">Verified</span>
-            </div>
+      <!-- Connected -->
+      <div id="chzzk-connected" class="auth-card auth-card--connected" style="display: none;">
+        <div class="auth-card-visual auth-card-visual--active">
+          <div class="auth-orb auth-orb--active"></div>
+          <svg class="auth-logo auth-logo--active" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="auth-card-body">
+          <span class="auth-label">Chzzk Account</span>
+          <div class="auth-channel">
+            <span class="auth-channel-dot"></span>
+            <span id="chzzk-channel-name" class="auth-channel-name">-</span>
           </div>
         </div>
+        <button type="button" id="btn-chzzk-logout" class="btn-disconnect">Disconnect</button>
       </div>
     </section>
 

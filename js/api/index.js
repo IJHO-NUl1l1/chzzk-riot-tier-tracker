@@ -5,6 +5,7 @@
 import summonerApi from './summoner.js';
 import rankApi from './rank.js';
 import tftApi from './tft.js';
+import chzzkApi from './chzzk.js';
 
 const api = {
   /**
@@ -42,7 +43,12 @@ const api = {
   /**
    * TFT API methods
    */
-  tft: tftApi
+  tft: tftApi,
+
+  /**
+   * Chzzk API methods
+   */
+  chzzk: chzzkApi
 };
 
 export default api;

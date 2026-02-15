@@ -548,6 +548,285 @@ button:disabled::after {
   font-weight: 600;
 }
 
+/* ==================== Chzzk Auth ==================== */
+
+.auth-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.auth-card:hover {
+  border-color: rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
+}
+
+.auth-card:hover .auth-sublabel,
+.auth-card:hover .auth-hint {
+  color: var(--color-text);
+}
+
+.auth-card:hover .auth-hint svg {
+  opacity: 1;
+}
+
+.auth-card:hover::before {
+  opacity: 1;
+}
+
+/* Visual orb area */
+.auth-card-visual {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auth-orb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04) 70%, transparent);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.auth-orb--active {
+  background: radial-gradient(circle at 40% 35%, rgba(52, 211, 153, 0.18), rgba(52, 211, 153, 0.05) 70%, transparent);
+  border-color: rgba(52, 211, 153, 0.15);
+  animation: orbPulse 3s ease-in-out infinite;
+}
+
+@keyframes orbPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  50% { box-shadow: 0 0 16px 4px rgba(52, 211, 153, 0.08); }
+}
+
+.auth-logo {
+  position: relative;
+  color: var(--color-text-muted);
+  z-index: 1;
+}
+
+.auth-logo--active {
+  color: var(--color-success);
+  filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.25));
+}
+
+/* Card body */
+.auth-card-body {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auth-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.auth-sublabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* Connected channel display */
+.auth-channel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.auth-channel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+  animation: dotBlink 2.5s ease-in-out infinite;
+}
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.auth-channel-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+/* Connect button */
+.btn-auth {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: 2px;
+  background: linear-gradient(135deg, #00c473, #059b54);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 250ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-auth svg {
+  flex-shrink: 0;
+  transition: transform 250ms ease;
+}
+
+.btn-auth:hover {
+  box-shadow:
+    0 4px 20px rgba(0, 196, 115, 0.35),
+    0 0 0 1px rgba(0, 196, 115, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-auth:hover svg {
+  transform: translateX(2px);
+}
+
+.btn-auth:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 196, 115, 0.3);
+}
+
+.btn-auth.is-loading {
+  background: var(--color-text-muted);
+  pointer-events: none;
+  animation: btnPulse 1.5s ease-in-out infinite;
+}
+
+.btn-auth.is-loading::after {
+  display: none;
+}
+
+/* Hint */
+.auth-hint {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin: 0;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+
+.auth-hint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-accent);
+  opacity: 0.6;
+}
+
+.auth-hint span {
+  display: block;
+}
+
+.auth-hint br {
+  content: '';
+  display: block;
+  margin-top: 3px;
+}
+
+/* Disconnect button */
+.btn-disconnect {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+  margin-top: 0;
+  cursor: pointer;
+  transition: all 200ms ease;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-disconnect::after {
+  display: none;
+}
+
+.btn-disconnect:hover {
+  border-color: rgba(248, 113, 113, 0.4);
+  color: var(--color-error);
+  background: rgba(248, 113, 113, 0.06);
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-disconnect:active {
+  transform: scale(0.98);
+}
+
+.btn-disconnect.is-loading {
+  background: var(--color-text-muted);
+  border-color: var(--color-text-muted);
+  color: #fff;
+  pointer-events: none;
+  animation: btnPulse 1.5s ease-in-out infinite;
+}
+
+/* Shared loading pulse */
+@keyframes btnPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* ==================== Pages ==================== */
 
 .page {
@@ -652,77 +931,6 @@ button:disabled::after {
 
 .nav-item:disabled {
   background: transparent;
-}
-
-/* ==================== Auth Page ==================== */
-
-.auth-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.auth-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-}
-
-.auth-icon {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-#auth-status-text {
-  font-size: 12px;
-  color: var(--color-text-dim);
-}
-
-.btn-auth {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-auth svg {
-  flex-shrink: 0;
-}
-
-.linked-info {
-  margin-top: 12px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 12px;
-}
-
-.linked-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-}
-
-.linked-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--color-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.linked-value {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.linked-verified {
-  color: var(--color-success);
 }
 
 /* ==================== Settings Page ==================== */

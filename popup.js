@@ -1,6 +1,79 @@
 import api from './js/api/index.js';
 import config from './js/config.js';
 
+// ==================== Chzzk Auth ====================
+
+function setButtonLoading(btn, loading, loadingText) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.originalText = btn.textContent;
+    btn.textContent = loadingText;
+    btn.classList.add('is-loading');
+    btn.disabled = true;
+  } else {
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+    btn.classList.remove('is-loading');
+    btn.disabled = false;
+  }
+}
+
+function handleChzzkLogin() {
+  const btn = document.getElementById('btn-chzzk-login');
+  setButtonLoading(btn, true, 'Connecting...');
+  chrome.runtime.sendMessage({ action: 'chzzk_login' });
+}
+
+async function handleChzzkLogout() {
+  const btn = document.getElementById('btn-chzzk-logout');
+  setButtonLoading(btn, true, 'Disconnecting...');
+
+  try {
+    const data = await new Promise((resolve) => {
+      chrome.storage.local.get(['chzzkAuth'], (result) => resolve(result.chzzkAuth));
+    });
+
+    if (data && data.userId) {
+      await api.chzzk.revokeToken(data.userId);
+    }
+  } catch (e) {
+    console.error('Revoke failed:', e);
+  }
+
+  chrome.storage.local.remove('chzzkAuth');
+  setButtonLoading(btn, false);
+  updateChzzkAuthUI(null);
+}
+
+function updateChzzkAuthUI(authData) {
+  const disconnected = document.getElementById('chzzk-disconnected');
+  const connected = document.getElementById('chzzk-connected');
+  const channelName = document.getElementById('chzzk-channel-name');
+
+  if (authData && authData.channelId) {
+    disconnected.style.display = 'none';
+    connected.style.display = 'flex';
+    channelName.textContent = authData.channelName || authData.channelId;
+  } else {
+    disconnected.style.display = 'flex';
+    connected.style.display = 'none';
+    channelName.textContent = '-';
+  }
+}
+
+async function loadChzzkAuthData() {
+  const data = await new Promise((resolve) => {
+    chrome.storage.local.get(['chzzkAuth'], (result) => resolve(result.chzzkAuth));
+  });
+  updateChzzkAuthUI(data || null);
+}
+
+// Auto-update UI when storage changes (e.g. background saves auth after tab login)
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.chzzkAuth) {
+    updateChzzkAuthUI(changes.chzzkAuth.newValue || null);
+  }
+});
+
 // CSS 변수에서 티어 색상을 가져오는 함수
 function getTierColor(tier) {
   if (!tier) return 'var(--tier-unranked)';
@@ -395,6 +468,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Tab navigation
   setupTabs();
 
+  // Chzzk auth buttons
+  const btnChzzkLogin = document.getElementById('btn-chzzk-login');
+  if (btnChzzkLogin) btnChzzkLogin.addEventListener('click', handleChzzkLogin);
+  const btnChzzkLogout = document.getElementById('btn-chzzk-logout');
+  if (btnChzzkLogout) btnChzzkLogout.addEventListener('click', handleChzzkLogout);
+
   // LoL button + Enter key
   const connectRiotBtn = document.getElementById('connect-riot');
   if (connectRiotBtn) {
@@ -434,5 +513,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Load saved data (parallel)
-  await Promise.all([loadSavedSummonerData(), loadSavedTftData()]);
+  await Promise.all([loadChzzkAuthData(), loadSavedSummonerData(), loadSavedTftData()]);
 });
