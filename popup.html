@@ -4,17 +4,18 @@
   <meta charset="UTF-8">
   <title>Riot Tier Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+KR:wght@400;500&family=Orbitron:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div id="app">
+  <main id="app">
     <h1>Riot Tier Tracker</h1>
 
     <!-- Page: Home (Auth) -->
-    <div id="page-home" class="page active">
+    <section id="page-home" class="page active">
       <div class="card">
         <div class="card-title">Account Link</div>
         <div class="card-content">
@@ -32,7 +33,7 @@
               <input type="text" id="chzzk-nickname-input" placeholder="Enter your Chzzk nickname">
             </div>
 
-            <button id="btn-riot-login" class="btn-auth">
+            <button type="button" id="btn-riot-login" class="btn-auth">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                 <polyline points="10 17 15 12 10 7"></polyline>
@@ -40,7 +41,7 @@
               </svg>
               Connect Riot Account
             </button>
-            <div id="auth-status-message" class="status-message"></div>
+            <div id="auth-status-message" class="status-message" aria-live="polite"></div>
           </div>
 
           <div id="linked-info" class="linked-info" style="display: none;">
@@ -59,17 +60,17 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Page: Search -->
-    <div id="page-search" class="page">
-      <div class="tab-nav">
-        <button id="tab-lol" class="tab-btn active" data-tab="lol">LoL</button>
-        <button id="tab-tft" class="tab-btn" data-tab="tft">TFT</button>
+    <section id="page-search" class="page">
+      <div class="tab-nav" role="tablist">
+        <button type="button" id="tab-lol" class="tab-btn active" data-tab="lol" role="tab" aria-selected="true" aria-controls="lol-content">LoL</button>
+        <button type="button" id="tab-tft" class="tab-btn" data-tab="tft" role="tab" aria-selected="false" aria-controls="tft-content">TFT</button>
       </div>
 
       <!-- LoL -->
-      <div id="lol-content" class="tab-content active">
+      <div id="lol-content" class="tab-content active" role="tabpanel" aria-labelledby="tab-lol">
         <div class="card">
           <div class="card-title">Riot ID Lookup</div>
           <div class="card-content">
@@ -95,8 +96,8 @@
                 <input type="text" id="tag-line-input" placeholder="KR1">
               </div>
             </div>
-            <button id="connect-riot">Search</button>
-            <div id="riot-status-message" class="status-message"></div>
+            <button type="button" id="connect-riot">Search</button>
+            <div id="riot-status-message" class="status-message" aria-live="polite"></div>
           </div>
         </div>
 
@@ -133,7 +134,7 @@
       </div>
 
       <!-- TFT -->
-      <div id="tft-content" class="tab-content">
+      <div id="tft-content" class="tab-content" role="tabpanel" aria-labelledby="tab-tft">
         <div class="card">
           <div class="card-title">Riot ID Lookup</div>
           <div class="card-content">
@@ -159,8 +160,8 @@
                 <input type="text" id="tft-tag-line-input" placeholder="KR1">
               </div>
             </div>
-            <button id="connect-tft">Search</button>
-            <div id="tft-status-message" class="status-message"></div>
+            <button type="button" id="connect-tft">Search</button>
+            <div id="tft-status-message" class="status-message" aria-live="polite"></div>
           </div>
         </div>
 
@@ -195,10 +196,10 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Page: Settings -->
-    <div id="page-settings" class="page">
+    <section id="page-settings" class="page">
       <div class="card">
         <div class="card-title">Settings</div>
         <div class="card-content">
@@ -239,29 +240,29 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-  </div>
+  </main>
 
   <!-- Bottom Navigation Bar -->
   <div class="bottom-nav-wrapper">
     <nav class="bottom-nav">
       <div class="nav-bubble"></div>
-      <button class="nav-item active" data-page="home">
+      <button type="button" class="nav-item active" data-page="home">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
       <span>Home</span>
     </button>
-    <button class="nav-item" data-page="search">
+    <button type="button" class="nav-item" data-page="search">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
       <span>Search</span>
     </button>
-    <button class="nav-item" data-page="settings">
+    <button type="button" class="nav-item" data-page="settings">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"></circle>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>

@@ -93,8 +93,12 @@ function setupTabs() {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
       // Update buttons
-      tabButtons.forEach(b => b.classList.remove('active'));
+      tabButtons.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
       // Update content
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById(`${tab}-content`).classList.add('active');
@@ -114,11 +118,19 @@ async function handleSummonerLookup() {
   try {
     showStatusMessage(riotStatusMessage, '', '');
     const gameName = summonerNameInput.value.trim();
-    const tagLine = tagLineInput.value.trim() || 'KR1';
+    const tagLine = tagLineInput.value.trim();
     const region = regionSelect.value;
 
+    if (!gameName && !tagLine) {
+      showStatusMessage(riotStatusMessage, 'Please enter a summoner name and tag', 'error');
+      return;
+    }
     if (!gameName) {
       showStatusMessage(riotStatusMessage, 'Please enter a summoner name', 'error');
+      return;
+    }
+    if (!tagLine) {
+      showStatusMessage(riotStatusMessage, 'Please enter a tag', 'error');
       return;
     }
 
@@ -151,8 +163,10 @@ async function fetchSummonerDetails() {
   if (!currentPuuid) return;
   try {
     const region = config.getSetting('region', 'kr');
-    currentSummonerData = await api.summoner.getSummonerByPuuid(currentPuuid, region);
-    currentRankData = await api.rank.getRankByPuuid(currentPuuid, region);
+    [currentSummonerData, currentRankData] = await Promise.all([
+      api.summoner.getSummonerByPuuid(currentPuuid, region),
+      api.rank.getRankByPuuid(currentPuuid, region),
+    ]);
   } catch (error) {
     console.error('Error fetching summoner details:', error);
   }
@@ -178,6 +192,7 @@ function updateUIWithSummonerData() {
       tierBadgeElement.textContent = `${tier} ${rank}`;
       tierBadgeElement.style.backgroundColor = getTierColor(tier);
       tierImageElement.src = getTierImageUrl(tier);
+      tierImageElement.alt = `${tier} ${rank}`;
       tierImageElement.hidden = false;
       tierLpElement.textContent = soloRank.tier ? `${soloRank.leaguePoints} LP` : '';
       const wins = soloRank.wins || 0;
@@ -189,6 +204,7 @@ function updateUIWithSummonerData() {
   } else {
     tierBadgeElement.textContent = 'UNRANKED';
     tierBadgeElement.style.backgroundColor = getTierColor('UNRANKED');
+    tierImageElement.alt = 'Unranked';
     tierImageElement.hidden = true;
     tierLpElement.textContent = '';
     winLossElement.textContent = '-';
@@ -208,11 +224,19 @@ async function handleTftLookup() {
   try {
     showStatusMessage(statusMessage, '', '');
     const gameName = nameInput.value.trim();
-    const tagLine = tagInput.value.trim() || 'KR1';
+    const tagLine = tagInput.value.trim();
     const region = regionSelect.value;
 
+    if (!gameName && !tagLine) {
+      showStatusMessage(statusMessage, 'Please enter a summoner name and tag', 'error');
+      return;
+    }
     if (!gameName) {
       showStatusMessage(statusMessage, 'Please enter a summoner name', 'error');
+      return;
+    }
+    if (!tagLine) {
+      showStatusMessage(statusMessage, 'Please enter a tag', 'error');
       return;
     }
 
@@ -245,8 +269,10 @@ async function fetchTftDetails(region) {
   if (!tftPuuid) return;
   try {
     const r = region || config.getSetting('region', 'kr');
-    tftSummonerData = await api.tft.getSummonerByPuuid(tftPuuid, r);
-    tftRankData = await api.tft.getRankByPuuid(tftPuuid, r);
+    [tftSummonerData, tftRankData] = await Promise.all([
+      api.tft.getSummonerByPuuid(tftPuuid, r),
+      api.tft.getRankByPuuid(tftPuuid, r),
+    ]);
   } catch (error) {
     console.error('Error fetching TFT details:', error);
   }
@@ -267,6 +293,7 @@ function updateUIWithTftData() {
       tierBadgeElement.textContent = `${tier} ${rank}`;
       tierBadgeElement.style.backgroundColor = getTierColor(tier);
       tierImageElement.src = getTierImageUrl(tier);
+      tierImageElement.alt = `${tier} ${rank}`;
       tierImageElement.hidden = false;
       tierLpElement.textContent = tftRank.tier ? `${tftRank.leaguePoints} LP` : '';
       const wins = tftRank.wins || 0;
@@ -278,6 +305,7 @@ function updateUIWithTftData() {
   } else {
     tierBadgeElement.textContent = 'UNRANKED';
     tierBadgeElement.style.backgroundColor = getTierColor('UNRANKED');
+    tierImageElement.alt = 'Unranked';
     tierImageElement.hidden = true;
     tierLpElement.textContent = '';
     winLossElement.textContent = '-';
@@ -367,17 +395,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Tab navigation
   setupTabs();
 
-  // LoL button
+  // LoL button + Enter key
   const connectRiotBtn = document.getElementById('connect-riot');
   if (connectRiotBtn) {
     connectRiotBtn.addEventListener('click', handleSummonerLookup);
   }
+  document.querySelectorAll('#summoner-name-input, #tag-line-input').forEach(input => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleSummonerLookup();
+    });
+  });
 
-  // TFT button
+  // TFT button + Enter key
   const connectTftBtn = document.getElementById('connect-tft');
   if (connectTftBtn) {
     connectTftBtn.addEventListener('click', handleTftLookup);
   }
+  document.querySelectorAll('#tft-summoner-name-input, #tft-tag-line-input').forEach(input => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleTftLookup();
+    });
+  });
 
   // Region change events
   const regionSelect = document.getElementById('region-select');
@@ -395,7 +433,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     tftRegionSelect.value = savedRegion;
   }
 
-  // Load saved data
-  await loadSavedSummonerData();
-  await loadSavedTftData();
+  // Load saved data (parallel)
+  await Promise.all([loadSavedSummonerData(), loadSavedTftData()]);
 });
