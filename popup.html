@@ -69,6 +69,83 @@
         </div>
         <button type="button" id="btn-chzzk-logout" class="btn-disconnect">Disconnect</button>
       </div>
+
+      <!-- Riot Account: 1단계 (미연결) -->
+      <div id="riot-disconnected" class="auth-card">
+        <div class="auth-card-visual">
+          <div class="auth-orb auth-orb--riot"></div>
+          <svg class="auth-logo" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="auth-card-body">
+          <span class="auth-label">Riot Account <span class="badge-beta">BETA</span></span>
+          <span class="auth-sublabel">Not connected</span>
+        </div>
+        <button type="button" id="btn-riot-oauth" class="btn-auth btn-auth--riot">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Riot OAuth
+        </button>
+      </div>
+
+      <!-- Riot Account: Loading -->
+      <div id="riot-loading" class="auth-card" style="display: none;">
+        <div class="auth-card-visual">
+          <div class="auth-orb auth-orb--riot"></div>
+          <svg class="auth-logo" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="auth-card-body">
+          <span class="auth-label">Riot Account <span class="badge-beta">BETA</span></span>
+          <span class="auth-sublabel auth-sublabel--loading">
+            <span class="auth-spinner"></span>
+            확인 중...
+          </span>
+        </div>
+      </div>
+
+      <!-- Riot Account: 2단계/3단계 (연결됨) -->
+      <div id="riot-connected" class="auth-card auth-card--connected" style="display: none;">
+        <div class="auth-card-visual auth-card-visual--active">
+          <div class="auth-orb auth-orb--riot auth-orb--active"></div>
+          <svg class="auth-logo auth-logo--active" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div class="auth-card-body">
+          <span class="auth-label">Riot Account <span class="badge-beta">BETA</span></span>
+        </div>
+        <div class="riot-split">
+          <div class="riot-split-col">
+            <span class="riot-split-title">LoL</span>
+            <img id="riot-lol-tier-img" class="riot-split-tier-img" src="" alt="" hidden>
+            <span id="riot-lol-name" class="riot-split-value">-</span>
+            <span id="riot-lol-tier" class="riot-split-tier">-</span>
+            <button type="button" id="btn-lol-action" class="btn-riot-register">Register</button>
+          </div>
+          <div class="riot-split-divider"></div>
+          <div class="riot-split-col">
+            <span class="riot-split-title">TFT</span>
+            <img id="riot-tft-tier-img" class="riot-split-tier-img" src="" alt="" hidden>
+            <span id="riot-tft-name" class="riot-split-value">-</span>
+            <span id="riot-tft-tier" class="riot-split-tier">-</span>
+            <button type="button" id="btn-tft-action" class="btn-riot-register">Register</button>
+          </div>
+        </div>
+        <div id="riot-hint-chzzk" class="auth-hint auth-hint--checklist">
+          <p class="auth-check">
+            <span>Chzzk 로그인</span>
+            <span class="auth-check-icon" id="riot-check-chzzk-icon">✕</span>
+          </p>
+        </div>
+        <button type="button" id="btn-riot-logout" class="btn-disconnect">Logout</button>
+      </div>
     </section>
 
     <!-- Page: Search -->

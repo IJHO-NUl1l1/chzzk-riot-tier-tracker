@@ -49,7 +49,9 @@ function updateChzzkAuthUI(authData) {
   const connected = document.getElementById('chzzk-connected');
   const channelName = document.getElementById('chzzk-channel-name');
 
-  if (authData && authData.channelId) {
+  const isConnected = authData && authData.channelId;
+
+  if (isConnected) {
     disconnected.style.display = 'none';
     connected.style.display = 'flex';
     channelName.textContent = authData.channelName || authData.channelId;
@@ -58,6 +60,9 @@ function updateChzzkAuthUI(authData) {
     connected.style.display = 'none';
     channelName.textContent = '-';
   }
+
+  // Riot UI depends on Chzzk state
+  loadRiotAuthData();
 }
 
 async function loadChzzkAuthData() {
@@ -67,10 +72,292 @@ async function loadChzzkAuthData() {
   updateChzzkAuthUI(data || null);
 }
 
-// Auto-update UI when storage changes (e.g. background saves auth after tab login)
+// ==================== Riot Auth (Beta — 3단계) ====================
+
+function showRiotLoading(show) {
+  const loading = document.getElementById('riot-loading');
+  const disconnected = document.getElementById('riot-disconnected');
+  const connected = document.getElementById('riot-connected');
+  if (show) {
+    loading.style.display = 'flex';
+    disconnected.style.display = 'none';
+    connected.style.display = 'none';
+  } else {
+    loading.style.display = 'none';
+  }
+}
+
+// Fill a single column (LoL or TFT) with tier data
+function fillTierColumn(prefix, data) {
+  const nameEl = document.getElementById(`riot-${prefix}-name`);
+  const tierEl = document.getElementById(`riot-${prefix}-tier`);
+  const tierImg = document.getElementById(`riot-${prefix}-tier-img`);
+
+  if (!nameEl) return;
+
+  nameEl.textContent = data && data.gameName
+    ? `${data.gameName}#${data.tagLine}`
+    : '-';
+
+  if (data && data.tier) {
+    tierEl.textContent = `${data.tier} ${data.rank || ''}`.trim();
+    tierEl.style.backgroundColor = getTierColor(data.tier);
+    tierEl.style.display = '';
+    tierImg.src = getTierImageUrl(data.tier);
+    tierImg.alt = data.tier;
+    tierImg.hidden = false;
+  } else if (data && data.puuid) {
+    tierEl.textContent = 'UNRANKED';
+    tierEl.style.backgroundColor = '#444';
+    tierEl.style.display = '';
+    tierImg.hidden = true;
+  } else {
+    tierEl.textContent = '-';
+    tierEl.style.display = 'none';
+    tierImg.hidden = true;
+  }
+}
+
+// Set column button state: Register or Unlink
+function setColumnButton(btnId, isRegistered, isEnabled) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  if (isRegistered) {
+    btn.textContent = 'Unlink';
+    btn.className = 'btn-riot-col-unlink';
+    btn.disabled = false;
+  } else {
+    btn.textContent = 'Register';
+    btn.className = 'btn-riot-register';
+    btn.disabled = !isEnabled;
+  }
+}
+
+// Main UI update — handles all 3 stages
+function updateRiotUI(riotConnected, lolDbEntry, tftDbEntry, lolSearchData, tftSearchData, chzzkConnected) {
+  document.getElementById('riot-loading').style.display = 'none';
+  const disconnected = document.getElementById('riot-disconnected');
+  const connected = document.getElementById('riot-connected');
+
+  if (!riotConnected) {
+    // Stage 1: disconnected
+    disconnected.style.display = 'flex';
+    connected.style.display = 'none';
+
+    return;
+  }
+
+  // Stage 2/3: connected
+  disconnected.style.display = 'none';
+  connected.style.display = 'flex';
+
+  const lolRegistered = !!lolDbEntry;
+  const tftRegistered = !!tftDbEntry;
+
+  // LoL column: DB data takes priority, fallback to search data
+  fillTierColumn('lol', lolDbEntry || lolSearchData || null);
+  setColumnButton('btn-lol-action', lolRegistered, chzzkConnected);
+
+  // TFT column: same logic
+  fillTierColumn('tft', tftDbEntry || tftSearchData || null);
+  setColumnButton('btn-tft-action', tftRegistered, chzzkConnected);
+
+  // Chzzk hint: always visible, icon changes dynamically
+  const hintEl = document.getElementById('riot-hint-chzzk');
+  const chzzkIcon = document.getElementById('riot-check-chzzk-icon');
+  if (hintEl) {
+    hintEl.style.display = '';
+  }
+  if (chzzkIcon) {
+    chzzkIcon.className = `auth-check-icon ${chzzkConnected ? 'is-met' : 'is-unmet'}`;
+    chzzkIcon.textContent = chzzkConnected ? '✔' : '✕';
+  }
+}
+
+// Normalize DB entry to match search data shape
+function dbEntryToData(entry) {
+  if (!entry) return null;
+  return {
+    gameName: entry.riot_game_name,
+    tagLine: entry.riot_tag_line,
+    puuid: entry.riot_puuid,
+    tier: entry.tier,
+    rank: entry.rank,
+    lp: entry.league_points,
+  };
+}
+
+// Cached DB state for button handlers
+let _riotDbState = { lolEntry: null, tftEntry: null };
+
+async function loadRiotAuthData() {
+  const result = await new Promise((resolve) => {
+    chrome.storage.local.get(['summonerData', 'tftData', 'chzzkAuth'], resolve);
+  });
+
+  const chzzkAuth = result.chzzkAuth;
+  const chzzkConnected = !!(chzzkAuth && chzzkAuth.channelId);
+  const lolSearch = result.summonerData || null;
+  const tftSearch = result.tftData || null;
+
+  let lolDbEntry = null;
+  let tftDbEntry = null;
+
+  // riotConnected: search 데이터가 있으면 2단계 (chzzk 연결과 무관)
+  // 1단계는 search 캐시가 없거나 유저가 직접 Logout 했을 때만
+  let riotConnected = !!(lolSearch || tftSearch);
+
+  if (chzzkConnected) {
+    showRiotLoading(true);
+    try {
+      const dbResult = await api.chzzk.getTierCache(chzzkAuth.channelId);
+      if (dbResult.entries) {
+        lolDbEntry = dbResult.entries.find(e => e.game_type === 'lol') || null;
+        tftDbEntry = dbResult.entries.find(e => e.game_type === 'tft') || null;
+      }
+      // DB에 데이터 있어도 riotConnected
+      if (lolDbEntry || tftDbEntry) riotConnected = true;
+    } catch (e) {
+      console.error('Failed to check tier cache:', e);
+    }
+  }
+
+  _riotDbState = { lolEntry: lolDbEntry, tftEntry: tftDbEntry };
+  updateRiotUI(riotConnected, dbEntryToData(lolDbEntry), dbEntryToData(tftDbEntry), lolSearch, tftSearch, chzzkConnected);
+}
+
+// Stage 1 → Stage 2: OAuth button (Beta: just switch to connected view)
+function handleRiotOAuth() {
+  // Beta: 바로 2단계로 전환 — search 데이터 기반으로 표시
+  const disconnected = document.getElementById('riot-disconnected');
+  const connected = document.getElementById('riot-connected');
+  disconnected.style.display = 'none';
+  connected.style.display = 'flex';
+}
+
+// Register a single game type to DB
+async function handleGameRegister(gameType) {
+  const btnId = gameType === 'lol' ? 'btn-lol-action' : 'btn-tft-action';
+  const prefix = gameType === 'lol' ? 'lol' : 'tft';
+  const btn = document.getElementById(btnId);
+  const storageKey = gameType === 'lol' ? 'summonerData' : 'tftData';
+
+  setButtonLoading(btn, true, '...');
+  try {
+    const result = await new Promise((resolve) => {
+      chrome.storage.local.get(['chzzkAuth', storageKey], resolve);
+    });
+
+    const chzzkAuth = result.chzzkAuth;
+    if (!chzzkAuth || !chzzkAuth.channelId) throw new Error('Chzzk not connected');
+
+    const data = result[storageKey];
+    if (!data || !data.puuid) throw new Error('No search data');
+
+    const entry = {
+      riotPuuid: data.puuid,
+      gameType,
+      queueType: gameType === 'lol' ? 'RANKED_SOLO_5x5' : 'RANKED_TFT',
+      tier: data.tier || null,
+      rank: data.rank || null,
+      leaguePoints: data.lp ?? 0,
+      wins: 0,
+      losses: 0,
+      gameName: data.gameName || null,
+      tagLine: data.tagLine || null,
+    };
+
+    await api.chzzk.saveTierCache(chzzkAuth.channelId, [entry]);
+
+    // Brief success indicator then update only this column
+    btn.textContent = '✔';
+    btn.classList.remove('is-loading');
+    btn.classList.add('is-success');
+    setTimeout(() => {
+      btn.classList.remove('is-success');
+      fillTierColumn(prefix, data);
+      setColumnButton(btnId, true, true);
+    }, 600);
+  } catch (e) {
+    console.error(`Failed to register ${gameType}:`, e);
+    setButtonLoading(btn, false);
+  }
+}
+
+// Unlink a single game type from DB
+async function handleGameUnlink(gameType) {
+  const btnId = gameType === 'lol' ? 'btn-lol-action' : 'btn-tft-action';
+  const prefix = gameType === 'lol' ? 'lol' : 'tft';
+  const storageKey = gameType === 'lol' ? 'summonerData' : 'tftData';
+  const btn = document.getElementById(btnId);
+
+  setButtonLoading(btn, true, '...');
+  try {
+    const result = await new Promise((resolve) => {
+      chrome.storage.local.get(['chzzkAuth', storageKey], resolve);
+    });
+    const chzzkAuth = result.chzzkAuth;
+    const chzzkConnected = !!(chzzkAuth && chzzkAuth.channelId);
+
+    if (chzzkConnected) {
+      await api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType);
+    }
+
+    // Update only this column — fallback to search data
+    const searchData = result[storageKey] || null;
+    fillTierColumn(prefix, searchData);
+    setColumnButton(btnId, false, chzzkConnected);
+  } catch (e) {
+    console.error(`Failed to unlink ${gameType}:`, e);
+    setButtonLoading(btn, false);
+  }
+}
+
+// Column button click dispatcher
+function handleLolAction() {
+  const btn = document.getElementById('btn-lol-action');
+  if (btn && btn.classList.contains('btn-riot-col-unlink')) {
+    handleGameUnlink('lol');
+  } else {
+    handleGameRegister('lol');
+  }
+}
+
+function handleTftAction() {
+  const btn = document.getElementById('btn-tft-action');
+  if (btn && btn.classList.contains('btn-riot-col-unlink')) {
+    handleGameUnlink('tft');
+  } else {
+    handleGameRegister('tft');
+  }
+}
+
+// Logout: delete all tier_cache + go back to stage 1
+async function handleRiotLogout() {
+  const btn = document.getElementById('btn-riot-logout');
+  setButtonLoading(btn, true, '...');
+  try {
+    const chzzkAuth = await new Promise((resolve) => {
+      chrome.storage.local.get(['chzzkAuth'], (r) => resolve(r.chzzkAuth));
+    });
+    if (chzzkAuth && chzzkAuth.channelId) {
+      await api.chzzk.deleteTierCache(chzzkAuth.channelId);
+    }
+  } catch (e) {
+    console.error('Logout error:', e);
+  }
+  chrome.storage.local.remove(['summonerData', 'tftData']);
+  setButtonLoading(btn, false);
+  await loadRiotAuthData();
+}
+
+// Auto-update UI when storage changes
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.chzzkAuth) {
     updateChzzkAuthUI(changes.chzzkAuth.newValue || null);
+  }
+  if (changes.summonerData || changes.tftData) {
+    loadRiotAuthData();
   }
 });
 
@@ -223,6 +510,7 @@ async function handleSummonerLookup() {
 
     await fetchSummonerDetails();
     updateUIWithSummonerData();
+    await saveSummonerTier();
     showStatusMessage(riotStatusMessage, 'Summoner found!', 'success');
   } catch (error) {
     console.error('Summoner lookup error:', error);
@@ -329,6 +617,7 @@ async function handleTftLookup() {
 
     await fetchTftDetails(region);
     updateUIWithTftData();
+    await saveTftTier();
     showStatusMessage(statusMessage, 'TFT info found!', 'success');
   } catch (error) {
     console.error('TFT lookup error:', error);
@@ -386,6 +675,63 @@ function updateUIWithTftData() {
   }
 }
 
+// ==================== Tier Storage ====================
+
+async function saveSummonerTier() {
+  try {
+    const existing = await new Promise((resolve) => {
+      chrome.storage.local.get(['summonerData'], (result) => resolve(result.summonerData));
+    });
+    if (!existing) return;
+
+    let tier = null;
+    let rank = null;
+    let lp = null;
+    if (currentRankData && currentRankData.length > 0) {
+      const soloRank = currentRankData.find(r => r.queueType === 'RANKED_SOLO_5x5') || currentRankData[0];
+      if (soloRank) {
+        tier = soloRank.tier || null;
+        rank = soloRank.rank || null;
+        lp = soloRank.leaguePoints ?? null;
+      }
+    }
+    await new Promise((resolve) => {
+      chrome.storage.local.set({ summonerData: { ...existing, tier, rank, lp } }, resolve);
+    });
+  } catch (e) {
+    console.error('Error saving summoner tier:', e);
+  }
+}
+
+async function saveTftTier() {
+  try {
+    const existing = await new Promise((resolve) => {
+      chrome.storage.local.get(['tftData'], (result) => resolve(result.tftData));
+    });
+    if (!existing) return;
+
+    let tier = null;
+    let rank = null;
+    let lp = null;
+    if (tftRankData && tftRankData.length > 0) {
+      const tftRank = tftRankData.find(r => r.queueType === 'RANKED_TFT') || tftRankData[0];
+      if (tftRank) {
+        tier = tftRank.tier || null;
+        rank = tftRank.rank || null;
+        lp = tftRank.leaguePoints ?? null;
+      }
+    }
+    await new Promise((resolve) => {
+      chrome.storage.local.set({ tftData: { ...existing, tier, rank, lp } }, resolve);
+    });
+  } catch (e) {
+    console.error('Error saving TFT tier:', e);
+  }
+}
+
+// ==================== Server Sync ====================
+
+
 // ==================== Storage ====================
 
 async function saveSummonerData(data) {
@@ -429,6 +775,7 @@ async function loadSavedSummonerData() {
 
       await fetchSummonerDetails();
       updateUIWithSummonerData();
+      await saveSummonerTier();
     }
   } catch (error) {
     console.error('Error loading saved summoner data:', error);
@@ -453,6 +800,7 @@ async function loadSavedTftData() {
 
       await fetchTftDetails(data.region);
       updateUIWithTftData();
+      await saveTftTier();
     }
   } catch (error) {
     console.error('Error loading saved TFT data:', error);
@@ -473,6 +821,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnChzzkLogin) btnChzzkLogin.addEventListener('click', handleChzzkLogin);
   const btnChzzkLogout = document.getElementById('btn-chzzk-logout');
   if (btnChzzkLogout) btnChzzkLogout.addEventListener('click', handleChzzkLogout);
+
+  // Riot auth buttons (3-stage)
+  const btnRiotOAuth = document.getElementById('btn-riot-oauth');
+  if (btnRiotOAuth) btnRiotOAuth.addEventListener('click', handleRiotOAuth);
+  const btnLolAction = document.getElementById('btn-lol-action');
+  if (btnLolAction) btnLolAction.addEventListener('click', handleLolAction);
+  const btnTftAction = document.getElementById('btn-tft-action');
+  if (btnTftAction) btnTftAction.addEventListener('click', handleTftAction);
+  const btnRiotLogout = document.getElementById('btn-riot-logout');
+  if (btnRiotLogout) btnRiotLogout.addEventListener('click', handleRiotLogout);
 
   // LoL button + Enter key
   const connectRiotBtn = document.getElementById('connect-riot');
@@ -512,6 +870,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tftRegionSelect.value = savedRegion;
   }
 
-  // Load saved data (parallel)
-  await Promise.all([loadChzzkAuthData(), loadSavedSummonerData(), loadSavedTftData()]);
+  // Load Chzzk auth first (Riot button state depends on it), then rest in parallel
+  await loadChzzkAuthData();
+  await Promise.all([loadRiotAuthData(), loadSavedSummonerData(), loadSavedTftData()]);
 });
