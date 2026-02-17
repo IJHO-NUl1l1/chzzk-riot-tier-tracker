@@ -371,7 +371,7 @@ function getTierColor(tier) {
 // 티어 이미지 URL을 가져오는 함수
 function getTierImageUrl(tier) {
   if (!tier || tier.toUpperCase() === 'UNRANKED') {
-    return 'images/Ranked Emblems Latest/Rank=Iron.png';
+    return 'images/RankedEmblemsLatest/Rank=Iron.png';
   }
   const tierMap = {
     'IRON': 'Iron', 'BRONZE': 'Bronze', 'SILVER': 'Silver', 'GOLD': 'Gold',
@@ -379,7 +379,7 @@ function getTierImageUrl(tier) {
     'MASTER': 'Master', 'GRANDMASTER': 'Grandmaster', 'CHALLENGER': 'Challenger'
   };
   const name = tierMap[tier.toUpperCase()] || 'Iron';
-  return `images/Ranked Emblems Latest/Rank=${name}.png`;
+  return `images/RankedEmblemsLatest/Rank=${name}.png`;
 }
 
 // Global variables
@@ -868,6 +868,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (tftRegionSelect) {
     const savedRegion = config.getSetting('region', 'kr');
     tftRegionSelect.value = savedRegion;
+  }
+
+  // Badge display settings
+  const showLolToggle = document.getElementById('setting-show-lol');
+  const showTftToggle = document.getElementById('setting-show-tft');
+
+  chrome.storage.local.get(['settings'], (result) => {
+    const s = result.settings || {};
+    if (showLolToggle) showLolToggle.checked = s.showLol !== false;
+    if (showTftToggle) showTftToggle.checked = s.showTft !== false;
+  });
+
+  if (showLolToggle) {
+    showLolToggle.addEventListener('change', () => {
+      config.setSetting('showLol', showLolToggle.checked);
+    });
+  }
+  if (showTftToggle) {
+    showTftToggle.addEventListener('change', () => {
+      config.setSetting('showTft', showTftToggle.checked);
+    });
   }
 
   // Load Chzzk auth first (Riot button state depends on it), then rest in parallel
