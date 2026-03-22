@@ -891,6 +891,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Default region setting
+  const defaultRegionSelect = document.getElementById('setting-default-region');
+  if (defaultRegionSelect) {
+    const savedRegion = config.getSetting('region', 'kr');
+    defaultRegionSelect.value = savedRegion;
+
+    defaultRegionSelect.addEventListener('change', () => {
+      const newRegion = defaultRegionSelect.value;
+      config.setSetting('region', newRegion);
+      // Search 페이지의 region select도 동기화
+      if (regionSelect) regionSelect.value = newRegion;
+      if (tftRegionSelect) tftRegionSelect.value = newRegion;
+    });
+  }
+
   // Load Chzzk auth first (Riot button state depends on it), then rest in parallel
   await loadChzzkAuthData();
   await Promise.all([loadRiotAuthData(), loadSavedSummonerData(), loadSavedTftData()]);

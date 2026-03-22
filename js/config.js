@@ -7,7 +7,9 @@ class Config {
     this.settings = {
       // Default settings
       region: 'kr',
-      devMode: false
+      devMode: false,
+      showLol: true,
+      showTft: true
     };
     this.loadSettings();
   }
