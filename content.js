@@ -56,6 +56,10 @@
 
   // ==================== State ====================
 
+  function isContextValid() {
+    try { return !!chrome.runtime?.id; } catch { return false; }
+  }
+
   const tierCache = new Map(); // nickname -> { data: [], timestamp }
   const pendingNicknames = new Set();
   let batchTimer = null;
@@ -166,6 +170,7 @@
   // ==================== Badge Injection ====================
 
   function injectBadge(msgEl, entries) {
+    if (!isContextValid()) return;
     if (!entries || entries.length === 0) return;
 
     const wrapperEl = msgEl.querySelector(SEL.usernameWrapper);
@@ -331,6 +336,7 @@
 
     // Observe document.body directly — resilient to chatWrapper unmount/remount
     chatObserver = new MutationObserver((mutations) => {
+      if (!isContextValid()) { chatObserver.disconnect(); return; }
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (node.nodeType !== Node.ELEMENT_NODE) continue;
