@@ -41,7 +41,7 @@
     "*://*.riotgames.com/*",
     "*://*.chzzk.naver.com/*",
     "*://localhost:*/*",
-    "*://*.vercel.app/*",
+    "*://*.railway.app/*",
     "*://*.leagueoflegends.com/*"
   ],
   "content_security_policy": {

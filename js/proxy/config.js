@@ -5,7 +5,7 @@ const proxyConfig = {
   },
   
   production: {
-    baseUrl: 'https://chzzk-riot-tier-tracker-server.vercel.app/api',
+    baseUrl: 'https://chzzk-riot-tier-tracker-fastify-production.up.railway.app/api',
     timeout: 30000
   },
   

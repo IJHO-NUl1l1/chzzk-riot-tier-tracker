@@ -1,7 +1,7 @@
 // Background script
 console.log('Chzzk LoL Tier Extension background script loaded');
 
-const SERVER_URL = 'https://chzzk-riot-tier-tracker-server.vercel.app';
+const SERVER_URL = 'https://chzzk-riot-tier-tracker-fastify-production.up.railway.app';
 const AUTH_SUCCESS_PATH = '/auth/success';
 
 // Persist authTabId in session storage (survives service worker restart)

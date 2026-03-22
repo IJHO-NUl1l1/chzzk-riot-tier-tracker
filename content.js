@@ -3,7 +3,7 @@
 
   // ==================== Constants ====================
 
-  const SERVER_URL = 'https://chzzk-riot-tier-tracker-server.vercel.app';
+  const SERVER_URL = 'https://chzzk-riot-tier-tracker-fastify-production.up.railway.app';
   const API_ENDPOINT = `${SERVER_URL}/api/tier`;
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   const BATCH_DELAY = 300; // ms debounce
@@ -302,14 +302,16 @@
   // ==================== Re-render ====================
 
   function rerenderAllBadges() {
+    // 기존 배지만 제거 (캐시는 보존 — API 재호출 불필요)
     document.querySelectorAll('.crtt-badge-wrapper').forEach((el) => el.remove());
 
+    // processed 메시지들에 대해 캐시에서 바로 배지 재삽입
     document.querySelectorAll(`[${PROCESSED_ATTR}]`).forEach((el) => {
-      el.removeAttribute(PROCESSED_ATTR);
       const nick = el.getAttribute('data-crtt-nick');
-      if (nick) {
-        tierCache.delete(nick);  // 캐시도 지워서 설정 변경 즉시 재조회 유도
-        processNewMessage(el);
+      if (!nick) return;
+      const cached = tierCache.get(nick);
+      if (cached) {
+        injectBadge(el, cached.data);
       }
     });
   }
