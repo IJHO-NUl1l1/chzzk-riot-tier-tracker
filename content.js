@@ -318,11 +318,23 @@
 
   // ==================== MutationObserver ====================
 
+  let chatObserver = null;
+  let attachTimer = null;
+
   function startObserver() {
+    if (chatObserver) {
+      chatObserver.disconnect();
+      chatObserver = null;
+    }
+    if (attachTimer) {
+      clearTimeout(attachTimer);
+      attachTimer = null;
+    }
+
     const tryAttach = () => {
       const chatContainer = document.querySelector(SEL.chatWrapper);
       if (!chatContainer) {
-        setTimeout(tryAttach, 1000);
+        attachTimer = setTimeout(tryAttach, 1000);
         return;
       }
 
@@ -330,7 +342,7 @@
       chatContainer.querySelectorAll(SEL.chatItem).forEach(processNewMessage);
 
       // Observe new messages
-      const observer = new MutationObserver((mutations) => {
+      chatObserver = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
             if (node.nodeType !== Node.ELEMENT_NODE) continue;
@@ -343,16 +355,33 @@
         }
       });
 
-      observer.observe(chatContainer, { childList: true, subtree: true });
+      chatObserver.observe(chatContainer, { childList: true, subtree: true });
       console.log('[CRTT] MutationObserver attached to chat container');
     };
 
     tryAttach();
   }
 
+  // ==================== SPA Route Change Detection ====================
+
+  function initRouteObserver() {
+    let lastUrl = location.href;
+
+    new MutationObserver(() => {
+      if (location.href === lastUrl) return;
+      lastUrl = location.href;
+
+      if (location.href.includes('/live/')) {
+        console.log('[CRTT] Live page detected, restarting observer');
+        startObserver();
+      }
+    }).observe(document, { subtree: true, childList: true });
+  }
+
   // ==================== Init ====================
 
   initSettings();
   startObserver();
+  initRouteObserver();
   console.log('%c[CRTT] Chzzk Riot Tier Tracker loaded', 'background: #1a73e8; color: white; padding: 4px 8px; border-radius: 3px;');
 })();
