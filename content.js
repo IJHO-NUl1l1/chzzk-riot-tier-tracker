@@ -319,47 +319,31 @@
   // ==================== MutationObserver ====================
 
   let chatObserver = null;
-  let attachTimer = null;
 
   function startObserver() {
     if (chatObserver) {
       chatObserver.disconnect();
       chatObserver = null;
     }
-    if (attachTimer) {
-      clearTimeout(attachTimer);
-      attachTimer = null;
-    }
 
-    const tryAttach = () => {
-      const chatContainer = document.querySelector(SEL.chatWrapper);
-      if (!chatContainer) {
-        attachTimer = setTimeout(tryAttach, 1000);
-        return;
-      }
+    // Process already-existing chat messages
+    document.querySelectorAll(SEL.chatItem).forEach(processNewMessage);
 
-      // Process existing messages
-      chatContainer.querySelectorAll(SEL.chatItem).forEach(processNewMessage);
-
-      // Observe new messages
-      chatObserver = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          for (const node of mutation.addedNodes) {
-            if (node.nodeType !== Node.ELEMENT_NODE) continue;
-            if (node.matches && node.matches(SEL.chatItem)) {
-              processNewMessage(node);
-            }
-            const items = node.querySelectorAll?.(SEL.chatItem);
-            if (items) items.forEach(processNewMessage);
+    // Observe document.body directly — resilient to chatWrapper unmount/remount
+    chatObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+          if (node.matches?.(SEL.chatItem)) {
+            processNewMessage(node);
           }
+          node.querySelectorAll?.(SEL.chatItem).forEach(processNewMessage);
         }
-      });
+      }
+    });
 
-      chatObserver.observe(chatContainer, { childList: true, subtree: true });
-      console.log('[CRTT] MutationObserver attached to chat container');
-    };
-
-    tryAttach();
+    chatObserver.observe(document.body, { childList: true, subtree: true });
+    console.log('[CRTT] MutationObserver attached to document.body');
   }
 
   // ==================== SPA Route Change Detection ====================
