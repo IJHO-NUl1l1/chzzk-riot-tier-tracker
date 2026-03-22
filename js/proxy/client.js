@@ -63,7 +63,7 @@ class ProxyClient {
    * @param {Object} body - Request body
    * @returns {Promise<Object>} Response data
    */
-  async post(endpoint, body = {}) {
+  async post(endpoint, body = {}, options = {}) {
     const url = `${proxyConfig.current.baseUrl}${endpoint}`;
 
     try {
@@ -73,7 +73,8 @@ class ProxyClient {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
         },
         body: JSON.stringify(body),
         mode: 'cors',
@@ -102,7 +103,7 @@ class ProxyClient {
    * @param {Object} params - URL parameters
    * @returns {Promise<Object>} Response data
    */
-  async delete(endpoint, params = {}) {
+  async delete(endpoint, params = {}, options = {}) {
     const url = new URL(`${proxyConfig.current.baseUrl}${endpoint}`);
 
     Object.keys(params).forEach(key => {
@@ -116,7 +117,8 @@ class ProxyClient {
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
         },
         mode: 'cors',
         signal: controller.signal

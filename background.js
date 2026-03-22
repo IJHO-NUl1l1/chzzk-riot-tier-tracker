@@ -62,19 +62,22 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     const channelId = params.get('channelId');
     const channelName = params.get('channelName');
     const userId = params.get('userId');
+    const jwtToken = params.get('jwt_token');
 
     if (!channelId) return;
 
     console.log('Auth success detected:', { channelId, channelName, userId });
 
-    await chrome.storage.local.set({
+    const storageData = {
       chzzkAuth: {
         channelId,
         channelName: channelName || '',
         userId: userId || '',
         connectedAt: Date.now()
       }
-    });
+    };
+    if (jwtToken) storageData.jwt_token = jwtToken;
+    await chrome.storage.local.set(storageData);
 
     await setAuthTabId(null);
     chrome.tabs.remove(tabId);

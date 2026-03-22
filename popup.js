@@ -1,6 +1,13 @@
 import api from './js/api/index.js';
 import config from './js/config.js';
 
+// ==================== JWT ====================
+
+async function getAuthHeaders() {
+  const { jwt_token } = await chrome.storage.local.get(['jwt_token']);
+  return jwt_token ? { 'Authorization': `Bearer ${jwt_token}` } : {};
+}
+
 // ==================== Chzzk Auth ====================
 
 function setButtonLoading(btn, loading, loadingText) {
@@ -33,13 +40,14 @@ async function handleChzzkLogout() {
     });
 
     if (data && data.userId) {
-      await api.chzzk.revokeToken(data.userId);
+      const headers = await getAuthHeaders();
+      await api.chzzk.revokeToken(data.userId, data.channelId, headers);
     }
   } catch (e) {
     console.error('Revoke failed:', e);
   }
 
-  chrome.storage.local.remove('chzzkAuth');
+  chrome.storage.local.remove(['chzzkAuth', 'jwt_token']);
   setButtonLoading(btn, false);
   updateChzzkAuthUI(null);
 }
@@ -267,7 +275,8 @@ async function handleGameRegister(gameType) {
       tagLine: data.tagLine || null,
     };
 
-    await api.chzzk.saveTierCache(chzzkAuth.channelId, [entry]);
+    const headers = await getAuthHeaders();
+    await api.chzzk.saveTierCache(chzzkAuth.channelId, [entry], headers);
 
     // Brief success indicator then update only this column
     btn.textContent = '✔';
@@ -300,7 +309,8 @@ async function handleGameUnlink(gameType) {
     const chzzkConnected = !!(chzzkAuth && chzzkAuth.channelId);
 
     if (chzzkConnected) {
-      await api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType);
+      const headers = await getAuthHeaders();
+      await api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType, headers);
     }
 
     // Update only this column — fallback to search data
@@ -341,7 +351,8 @@ async function handleRiotLogout() {
       chrome.storage.local.get(['chzzkAuth'], (r) => resolve(r.chzzkAuth));
     });
     if (chzzkAuth && chzzkAuth.channelId) {
-      await api.chzzk.deleteTierCache(chzzkAuth.channelId);
+      const headers = await getAuthHeaders();
+      await api.chzzk.deleteTierCache(chzzkAuth.channelId, undefined, headers);
     }
   } catch (e) {
     console.error('Logout error:', e);
