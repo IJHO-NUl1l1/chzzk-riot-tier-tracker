@@ -8,6 +8,11 @@ async function getAuthHeaders() {
   return jwt_token ? { 'Authorization': `Bearer ${jwt_token}` } : {};
 }
 
+async function getLiveId() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab?.url?.match(/\/live\/([^/?#]+)/)?.[1] ?? null;
+}
+
 // ==================== Chzzk Auth ====================
 
 function setButtonLoading(btn, loading, loadingText) {
@@ -276,7 +281,8 @@ async function handleGameRegister(gameType) {
     };
 
     const headers = await getAuthHeaders();
-    await api.chzzk.saveTierCache(chzzkAuth.channelId, [entry], headers);
+    const liveId = await getLiveId();
+    await api.chzzk.saveTierCache(chzzkAuth.channelId, [entry], headers, liveId);
 
     // Brief success indicator then update only this column
     btn.textContent = '✔';
@@ -310,7 +316,8 @@ async function handleGameUnlink(gameType) {
 
     if (chzzkConnected) {
       const headers = await getAuthHeaders();
-      await api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType, headers);
+      const liveId = await getLiveId();
+      await api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType, headers, liveId);
     }
 
     // Update only this column — fallback to search data
@@ -352,7 +359,8 @@ async function handleRiotLogout() {
     });
     if (chzzkAuth && chzzkAuth.channelId) {
       const headers = await getAuthHeaders();
-      await api.chzzk.deleteTierCache(chzzkAuth.channelId, undefined, headers);
+      const liveId = await getLiveId();
+      await api.chzzk.deleteTierCache(chzzkAuth.channelId, undefined, headers, liveId);
     }
   } catch (e) {
     console.error('Logout error:', e);
