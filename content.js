@@ -7,6 +7,10 @@
   const API_ENDPOINT = `${SERVER_URL}/api/tier`;
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   const BATCH_DELAY = 300; // ms debounce
+  const SUPABASE_URL = 'https://tsatamdaikanfcnluhua.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzYXRhbWRhaWthbmZjbmx1aHVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwNDMwMDcsImV4cCI6MjA4NjYxOTAwN30.PFP-v8f_QT-rsdm5yr7gsEJfnlEDEz-hw8ULd_ZNjBc';
+  const MAX_RECONNECT = 3;
+  const RECONNECT_DELAY = 3000;
   const PROCESSED_ATTR = 'data-crtt-processed';
 
   const TIER_COLORS = {
@@ -65,6 +69,13 @@
   let batchTimer = null;
   let settings = { showLol: true, showTft: true };
   let tooltipEl = null;
+
+  // Realtime state
+  let realtimeClient = null;
+  let realtimeChannel = null;
+  let reconnectTimer = null;
+  let reconnectCount = 0;
+  let pollTimer = null;
 
   // ==================== Settings ====================
 
@@ -321,6 +332,78 @@
     });
   }
 
+  // ==================== Realtime ====================
+
+  function getBroadcastId() {
+    const match = location.pathname.match(/\/live\/([^/?#]+)/);
+    return match ? match[1] : null;
+  }
+
+  function rerenderSpecificBadges(nickname) {
+    tierCache.delete(nickname);
+    const escapedNick = CSS.escape(nickname);
+    document.querySelectorAll(`[data-crtt-nick="${escapedNick}"]`).forEach((msg) => {
+      msg.querySelector('.crtt-badge-wrapper')?.remove();
+    });
+    queueNickname(nickname);
+  }
+
+  function handleRealtimeEvent(event, payload) {
+    const { chzzkChannelName } = payload;
+    if (!chzzkChannelName) return;
+    console.log(`[CRTT] Realtime event: ${event}, nickname: ${chzzkChannelName}`);
+    rerenderSpecificBadges(chzzkChannelName);
+  }
+
+  function startPollFallback() {
+    if (pollTimer) return;
+    console.log('[CRTT] Realtime unavailable, starting 60s poll fallback');
+    pollTimer = setInterval(() => {
+      tierCache.clear();
+    }, 60 * 1000);
+  }
+
+  function cleanupRealtime() {
+    if (realtimeChannel && realtimeClient) {
+      realtimeClient.removeChannel(realtimeChannel);
+      realtimeChannel = null;
+    }
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    reconnectCount = 0;
+  }
+
+  function initRealtime() {
+    if (!isContextValid()) return;
+
+    const broadcastId = getBroadcastId();
+    if (!broadcastId) return;
+
+    cleanupRealtime();
+
+    realtimeClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    realtimeChannel = realtimeClient
+      .channel(`tier_updates:${broadcastId}`)
+      .on('broadcast', { event: 'tier_updated' }, ({ payload }) => handleRealtimeEvent('tier_updated', payload))
+      .on('broadcast', { event: 'tier_deleted' }, ({ payload }) => handleRealtimeEvent('tier_deleted', payload))
+      .on('broadcast', { event: 'privacy_changed' }, ({ payload }) => handleRealtimeEvent('privacy_changed', payload))
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          reconnectCount = 0;
+          console.log(`[CRTT] Realtime connected: tier_updates:${broadcastId}`);
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          console.log(`[CRTT] Realtime disconnected (${status})`);
+          if (reconnectCount < MAX_RECONNECT) {
+            reconnectCount++;
+            reconnectTimer = setTimeout(initRealtime, RECONNECT_DELAY);
+          } else {
+            startPollFallback();
+          }
+        }
+      });
+  }
+
   // ==================== MutationObserver ====================
 
   let chatObserver = null;
@@ -364,6 +447,7 @@
       if (location.href.includes('/live/')) {
         console.log('[CRTT] Live page detected, restarting observer');
         startObserver();
+        initRealtime();
       }
     }).observe(document, { subtree: true, childList: true });
   }
@@ -373,5 +457,9 @@
   initSettings();
   startObserver();
   initRouteObserver();
+  initRealtime();
+
+  window.addEventListener('beforeunload', cleanupRealtime);
+
   console.log('%c[CRTT] Chzzk Riot Tier Tracker loaded', 'background: #1a73e8; color: white; padding: 4px 8px; border-radius: 3px;');
 })();
