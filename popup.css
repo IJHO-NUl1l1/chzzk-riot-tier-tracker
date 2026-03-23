@@ -1244,6 +1244,20 @@ button:disabled::after {
   transform: translateX(18px);
 }
 
+/* Privacy Row */
+.privacy-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.privacy-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
 /* About */
 .about-info {
   display: flex;

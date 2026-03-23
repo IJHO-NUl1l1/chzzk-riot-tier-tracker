@@ -146,6 +146,15 @@ function setColumnButton(btnId, isRegistered, isEnabled) {
   }
 }
 
+// Show/hide privacy toggle and set its checked state
+function setPrivacyToggle(gameType, visible, isPublic) {
+  const row = document.getElementById(`${gameType}-privacy-row`);
+  const check = document.getElementById(`${gameType}-privacy-check`);
+  if (!row || !check) return;
+  row.style.display = visible ? 'flex' : 'none';
+  check.checked = isPublic !== false;
+}
+
 // Main UI update — handles all 3 stages
 function updateRiotUI(riotConnected, lolDbEntry, tftDbEntry, lolSearchData, tftSearchData, chzzkConnected) {
   document.getElementById('riot-loading').style.display = 'none';
@@ -170,10 +179,12 @@ function updateRiotUI(riotConnected, lolDbEntry, tftDbEntry, lolSearchData, tftS
   // LoL column: DB data takes priority, fallback to search data
   fillTierColumn('lol', lolDbEntry || lolSearchData || null);
   setColumnButton('btn-lol-action', lolRegistered, chzzkConnected);
+  setPrivacyToggle('lol', lolRegistered, lolDbEntry?.is_public);
 
   // TFT column: same logic
   fillTierColumn('tft', tftDbEntry || tftSearchData || null);
   setColumnButton('btn-tft-action', tftRegistered, chzzkConnected);
+  setPrivacyToggle('tft', tftRegistered, tftDbEntry?.is_public);
 
   // Chzzk hint: always visible, icon changes dynamically
   const hintEl = document.getElementById('riot-hint-chzzk');
@@ -292,6 +303,7 @@ async function handleGameRegister(gameType) {
       btn.classList.remove('is-success');
       fillTierColumn(prefix, data);
       setColumnButton(btnId, true, true);
+      setPrivacyToggle(gameType, true, true);
     }, 600);
   } catch (e) {
     console.error(`Failed to register ${gameType}:`, e);
@@ -324,6 +336,7 @@ async function handleGameUnlink(gameType) {
     const searchData = result[storageKey] || null;
     fillTierColumn(prefix, searchData);
     setColumnButton(btnId, false, chzzkConnected);
+    setPrivacyToggle(gameType, false, true);
   } catch (e) {
     console.error(`Failed to unlink ${gameType}:`, e);
     setButtonLoading(btn, false);
@@ -748,6 +761,22 @@ async function saveTftTier() {
   }
 }
 
+// ==================== Privacy Toggle ====================
+
+async function handlePrivacyToggle(gameType, isPublic) {
+  try {
+    const chzzkAuth = await new Promise((resolve) => {
+      chrome.storage.local.get(['chzzkAuth'], (r) => resolve(r.chzzkAuth));
+    });
+    if (!chzzkAuth || !chzzkAuth.channelId) return;
+    const headers = await getAuthHeaders();
+    const liveId = await getLiveId();
+    await api.chzzk.updatePrivacy(chzzkAuth.channelId, gameType, isPublic, headers, liveId);
+  } catch (e) {
+    console.error(`Failed to update privacy for ${gameType}:`, e);
+  }
+}
+
 // ==================== Server Sync ====================
 
 
@@ -923,6 +952,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (regionSelect) regionSelect.value = newRegion;
       if (tftRegionSelect) tftRegionSelect.value = newRegion;
     });
+  }
+
+  // Privacy toggles
+  const lolPrivacyCheck = document.getElementById('lol-privacy-check');
+  const tftPrivacyCheck = document.getElementById('tft-privacy-check');
+  if (lolPrivacyCheck) {
+    lolPrivacyCheck.addEventListener('change', () => handlePrivacyToggle('lol', lolPrivacyCheck.checked));
+  }
+  if (tftPrivacyCheck) {
+    tftPrivacyCheck.addEventListener('change', () => handlePrivacyToggle('tft', tftPrivacyCheck.checked));
   }
 
   // Load Chzzk auth first (Riot button state depends on it), then rest in parallel
