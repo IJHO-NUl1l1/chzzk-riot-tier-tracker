@@ -146,13 +146,25 @@ function setColumnButton(btnId, isRegistered, isEnabled) {
   }
 }
 
-// Show/hide privacy toggle and set its checked state
+// Show/hide privacy chip and set its state
 function setPrivacyToggle(gameType, visible, isPublic) {
-  const row = document.getElementById(`${gameType}-privacy-row`);
-  const check = document.getElementById(`${gameType}-privacy-check`);
-  if (!row || !check) return;
-  row.style.display = visible ? 'flex' : 'none';
-  check.checked = isPublic !== false;
+  const chip = document.getElementById(`${gameType}-privacy-chip`);
+  if (!chip) return;
+  chip.style.display = visible ? 'inline-flex' : 'none';
+  updatePrivacyChip(chip, isPublic !== false);
+}
+
+function updatePrivacyChip(chip, isPublic) {
+  chip.dataset.public = isPublic ? 'true' : 'false';
+  const icon = chip.querySelector('.privacy-chip-icon');
+  const label = chip.querySelector('.privacy-chip-label');
+  if (isPublic) {
+    label.textContent = '공개 중';
+    icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>';
+  } else {
+    label.textContent = '비공개';
+    icon.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>';
+  }
 }
 
 // Main UI update — handles all 3 stages
@@ -954,14 +966,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Privacy toggles
-  const lolPrivacyCheck = document.getElementById('lol-privacy-check');
-  const tftPrivacyCheck = document.getElementById('tft-privacy-check');
-  if (lolPrivacyCheck) {
-    lolPrivacyCheck.addEventListener('change', () => handlePrivacyToggle('lol', lolPrivacyCheck.checked));
+  // Privacy chips
+  const lolChip = document.getElementById('lol-privacy-chip');
+  const tftChip = document.getElementById('tft-privacy-chip');
+  if (lolChip) {
+    lolChip.addEventListener('click', () => {
+      const next = lolChip.dataset.public !== 'true';
+      updatePrivacyChip(lolChip, next);
+      handlePrivacyToggle('lol', next);
+    });
   }
-  if (tftPrivacyCheck) {
-    tftPrivacyCheck.addEventListener('change', () => handlePrivacyToggle('tft', tftPrivacyCheck.checked));
+  if (tftChip) {
+    tftChip.addEventListener('click', () => {
+      const next = tftChip.dataset.public !== 'true';
+      updatePrivacyChip(tftChip, next);
+      handlePrivacyToggle('tft', next);
+    });
   }
 
   // Load Chzzk auth first (Riot button state depends on it), then rest in parallel

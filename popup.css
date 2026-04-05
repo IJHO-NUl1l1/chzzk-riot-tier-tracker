@@ -1244,18 +1244,48 @@ button:disabled::after {
   transform: translateX(18px);
 }
 
-/* Privacy Row */
-.privacy-row {
-  display: flex;
+/* Privacy Chip */
+.privacy-chip {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
 }
 
-.privacy-label {
-  font-size: 11px;
+.privacy-chip:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+
+.privacy-chip[data-public="false"] {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: transparent;
   color: var(--color-text-muted);
+  box-shadow: none;
+}
+
+.privacy-chip[data-public="false"]:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.privacy-chip-icon {
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 
 /* About */
