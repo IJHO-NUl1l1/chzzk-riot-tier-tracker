@@ -383,25 +383,33 @@
 
     realtimeClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    realtimeChannel = realtimeClient
-      .channel(`tier_updates:${broadcastId}`)
-      .on('broadcast', { event: 'tier_updated' }, ({ payload }) => handleRealtimeEvent('tier_updated', payload))
-      .on('broadcast', { event: 'tier_deleted' }, ({ payload }) => handleRealtimeEvent('tier_deleted', payload))
-      .on('broadcast', { event: 'privacy_changed' }, ({ payload }) => handleRealtimeEvent('privacy_changed', payload))
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          reconnectCount = 0;
-          console.log(`[CRTT] Realtime connected: tier_updates:${broadcastId}`);
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          console.log(`[CRTT] Realtime disconnected (${status})`);
-          if (reconnectCount < MAX_RECONNECT) {
-            reconnectCount++;
-            reconnectTimer = setTimeout(initRealtime, RECONNECT_DELAY);
-          } else {
-            startPollFallback();
+    chrome.storage.local.get(['chzzkAuth'], (result) => {
+      const myChannelName = result.chzzkAuth?.channelName || null;
+
+      realtimeChannel = realtimeClient
+        .channel(`tier_updates:${broadcastId}`)
+        .on('broadcast', { event: 'tier_updated' }, ({ payload }) => handleRealtimeEvent('tier_updated', payload))
+        .on('broadcast', { event: 'tier_deleted' }, ({ payload }) => handleRealtimeEvent('tier_deleted', payload))
+        .on('broadcast', { event: 'privacy_changed' }, ({ payload }) => handleRealtimeEvent('privacy_changed', payload))
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            reconnectCount = 0;
+            console.log(`[CRTT] Realtime connected: tier_updates:${broadcastId}`);
+            if (myChannelName) {
+              await realtimeChannel.track({ chzzkChannelName: myChannelName });
+              console.log(`[CRTT] Presence joined: ${myChannelName}`);
+            }
+          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            console.log(`[CRTT] Realtime disconnected (${status})`);
+            if (reconnectCount < MAX_RECONNECT) {
+              reconnectCount++;
+              reconnectTimer = setTimeout(initRealtime, RECONNECT_DELAY);
+            } else {
+              startPollFallback();
+            }
           }
-        }
-      });
+        });
+    });
   }
 
   // ==================== MutationObserver ====================
