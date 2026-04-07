@@ -26,7 +26,7 @@
         "*://*.chzzk.naver.com/*", 
         "*://studio.chzzk.naver.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["js/lib/supabase.min.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_end",
       "all_frames": true
