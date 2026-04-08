@@ -8,6 +8,36 @@ async function getAuthHeaders() {
   return jwt_token ? { 'Authorization': `Bearer ${jwt_token}` } : {};
 }
 
+// Try to renew JWT via Chzzk token refresh. Returns true if a new token was saved.
+async function tryRefreshJwt() {
+  const { chzzkAuth } = await chrome.storage.local.get(['chzzkAuth']);
+  if (!chzzkAuth?.userId || !chzzkAuth?.channelId) return false;
+  try {
+    const resp = await api.chzzk.refreshToken(chzzkAuth.userId, chzzkAuth.channelId, await getAuthHeaders());
+    if (resp?.jwt_token) {
+      await chrome.storage.local.set({ jwt_token: resp.jwt_token });
+      return true;
+    }
+  } catch { /* refresh itself failed — user must re-login */ }
+  return false;
+}
+
+// Calls fn(headers). On Invalid token: refresh once and retry. On second fail: prompt re-login.
+async function withAuth(fn) {
+  try {
+    return await fn(await getAuthHeaders());
+  } catch (e) {
+    if (e?.message === 'Invalid token' || e?.message === 'Unauthorized') {
+      const refreshed = await tryRefreshJwt();
+      if (refreshed) return await fn(await getAuthHeaders());
+      // JWT expired AND refresh failed → force re-login
+      await chrome.storage.local.remove(['jwt_token']);
+      alert('로그인이 만료되었습니다. 치지직 계정을 다시 연결해 주세요.');
+    }
+    throw e;
+  }
+}
+
 async function getLiveId() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab?.url?.match(/\/live\/([^/?#]+)/)?.[1] ?? null;
@@ -146,25 +176,13 @@ function setColumnButton(btnId, isRegistered, isEnabled) {
   }
 }
 
-// Show/hide privacy chip and set its state
+// Show/hide privacy toggle and set its state
 function setPrivacyToggle(gameType, visible, isPublic) {
-  const chip = document.getElementById(`${gameType}-privacy-chip`);
-  if (!chip) return;
-  chip.style.display = visible ? 'inline-flex' : 'none';
-  updatePrivacyChip(chip, isPublic !== false);
-}
-
-function updatePrivacyChip(chip, isPublic) {
-  chip.dataset.public = isPublic ? 'true' : 'false';
-  const icon = chip.querySelector('.privacy-chip-icon');
-  const label = chip.querySelector('.privacy-chip-label');
-  if (isPublic) {
-    label.textContent = '공개 중';
-    icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>';
-  } else {
-    label.textContent = '비공개';
-    icon.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>';
-  }
+  const label = document.getElementById(`${gameType}-privacy-toggle`);
+  const input = document.getElementById(`${gameType}-privacy-input`);
+  if (!label || !input) return;
+  label.style.display = visible ? 'inline-block' : 'none';
+  input.checked = isPublic !== false;
 }
 
 // Main UI update — handles all 3 stages
@@ -191,23 +209,13 @@ function updateRiotUI(riotConnected, lolDbEntry, tftDbEntry, lolSearchData, tftS
   // LoL column: DB data takes priority, fallback to search data
   fillTierColumn('lol', lolDbEntry || lolSearchData || null);
   setColumnButton('btn-lol-action', lolRegistered, chzzkConnected);
-  setPrivacyToggle('lol', lolRegistered, lolDbEntry?.is_public);
+  setPrivacyToggle('lol', lolRegistered, lolDbEntry?.isPublic);
 
   // TFT column: same logic
   fillTierColumn('tft', tftDbEntry || tftSearchData || null);
   setColumnButton('btn-tft-action', tftRegistered, chzzkConnected);
-  setPrivacyToggle('tft', tftRegistered, tftDbEntry?.is_public);
+  setPrivacyToggle('tft', tftRegistered, tftDbEntry?.isPublic);
 
-  // Chzzk hint: always visible, icon changes dynamically
-  const hintEl = document.getElementById('riot-hint-chzzk');
-  const chzzkIcon = document.getElementById('riot-check-chzzk-icon');
-  if (hintEl) {
-    hintEl.style.display = '';
-  }
-  if (chzzkIcon) {
-    chzzkIcon.className = `auth-check-icon ${chzzkConnected ? 'is-met' : 'is-unmet'}`;
-    chzzkIcon.textContent = chzzkConnected ? '✔' : '✕';
-  }
 }
 
 // Normalize DB entry to match search data shape
@@ -220,6 +228,7 @@ function dbEntryToData(entry) {
     tier: entry.tier,
     rank: entry.rank,
     lp: entry.league_points,
+    isPublic: entry.is_public,
   };
 }
 
@@ -303,9 +312,8 @@ async function handleGameRegister(gameType) {
       tagLine: data.tagLine || null,
     };
 
-    const headers = await getAuthHeaders();
     const liveId = await getLiveId();
-    await api.chzzk.saveTierCache(chzzkAuth.channelId, [entry], headers, liveId);
+    await withAuth((headers) => api.chzzk.saveTierCache(chzzkAuth.channelId, [entry], headers, liveId));
 
     // Brief success indicator then update only this column
     btn.textContent = '✔';
@@ -339,9 +347,8 @@ async function handleGameUnlink(gameType) {
     const chzzkConnected = !!(chzzkAuth && chzzkAuth.channelId);
 
     if (chzzkConnected) {
-      const headers = await getAuthHeaders();
       const liveId = await getLiveId();
-      await api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType, headers, liveId);
+      await withAuth((headers) => api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType, headers, liveId));
     }
 
     // Update only this column — fallback to search data
@@ -966,21 +973,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Privacy chips
-  const lolChip = document.getElementById('lol-privacy-chip');
-  const tftChip = document.getElementById('tft-privacy-chip');
-  if (lolChip) {
-    lolChip.addEventListener('click', () => {
-      const next = lolChip.dataset.public !== 'true';
-      updatePrivacyChip(lolChip, next);
-      handlePrivacyToggle('lol', next);
+  // Privacy toggles
+  const lolPrivacyInput = document.getElementById('lol-privacy-input');
+  const tftPrivacyInput = document.getElementById('tft-privacy-input');
+  if (lolPrivacyInput) {
+    lolPrivacyInput.addEventListener('change', () => {
+      handlePrivacyToggle('lol', lolPrivacyInput.checked);
     });
   }
-  if (tftChip) {
-    tftChip.addEventListener('click', () => {
-      const next = tftChip.dataset.public !== 'true';
-      updatePrivacyChip(tftChip, next);
-      handlePrivacyToggle('tft', next);
+  if (tftPrivacyInput) {
+    tftPrivacyInput.addEventListener('change', () => {
+      handlePrivacyToggle('tft', tftPrivacyInput.checked);
     });
   }
 

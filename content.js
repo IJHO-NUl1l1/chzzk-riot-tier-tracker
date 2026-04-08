@@ -269,34 +269,40 @@
     const tierImgUrl = tierImgName
       ? chrome.runtime.getURL(`images/RankedEmblemsLatest/Rank=${tierImgName}.png`)
       : '';
-    const gameLabel = entry.game_type === 'lol' ? 'League of Legends' : 'Teamfight Tactics';
-    const lpText = entry.league_points != null ? `${entry.league_points} LP` : '';
+    const gameKey = entry.game_type === 'lol' ? 'lol' : 'tft';
+    const gameLabel = entry.game_type === 'lol' ? 'LoL' : 'TFT';
+    const lp = entry.league_points;
+    const tierColor = TIER_COLORS[tierUpper] || '#e4e4e7';
     const nameText = entry.riot_game_name ? `${escapeHtml(entry.riot_game_name)}#${escapeHtml(entry.riot_tag_line || '')}` : '';
+
+    const lpHtml = lp != null
+      ? `<div class="crtt-tooltip-lp-prestige">${lp} <span style="font-weight:500;color:#52525b;font-size:10px">LP</span></div>`
+      : '';
 
     tooltipEl.innerHTML = `
       <div class="crtt-tooltip-header">
         ${tierImgUrl ? `<img class="crtt-tooltip-tier-img" src="${tierImgUrl}" alt="${escapeHtml(tierName)}">` : ''}
         <div class="crtt-tooltip-info">
-          <div class="crtt-tooltip-game">${escapeHtml(gameLabel)}</div>
-          <div class="crtt-tooltip-tier-text" style="color:${TIER_COLORS[tierUpper] || '#fff'}">${escapeHtml(tierName)}</div>
-          ${lpText ? `<div class="crtt-tooltip-lp">${escapeHtml(lpText)}</div>` : ''}
+          <div class="crtt-tooltip-game crtt-tooltip-game--${gameKey}">${escapeHtml(gameLabel)}</div>
+          <div class="crtt-tooltip-tier-text" style="color:${tierColor};text-shadow:0 0 12px ${tierColor}55">${escapeHtml(tierName)}</div>
         </div>
       </div>
+      ${lpHtml}
       ${nameText ? `<div class="crtt-tooltip-name">${nameText}</div>` : ''}
     `;
 
-    // Position below the badge
+    tooltipEl.style.borderLeftColor = tierColor + '55';
+
     const rect = badgeEl.getBoundingClientRect();
     let left = rect.left;
     let top = rect.bottom + 6;
 
-    // Prevent overflow
-    const tooltipWidth = 200;
+    const tooltipWidth = 248;
     if (left + tooltipWidth > window.innerWidth) {
       left = window.innerWidth - tooltipWidth - 8;
     }
-    if (top + 120 > window.innerHeight) {
-      top = rect.top - 6 - 100; // above
+    if (top + 110 > window.innerHeight) {
+      top = rect.top - 8 - 110;
     }
 
     tooltipEl.style.left = `${left}px`;

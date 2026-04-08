@@ -1,6 +1,10 @@
 import proxyClient from '../proxy/client.js';
 
 const chzzkApi = {
+  async refreshToken(userId, chzzkChannelId, headers = {}) {
+    return proxyClient.post('/chzzk/auth/refresh', { userId, chzzkChannelId }, { headers });
+  },
+
   async revokeToken(userId, chzzkChannelId, headers = {}) {
     return proxyClient.post('/chzzk/auth/revoke', { userId, chzzkChannelId }, { headers });
   },

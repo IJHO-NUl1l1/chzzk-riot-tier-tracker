@@ -123,39 +123,33 @@
         </div>
         <div class="riot-split">
           <div class="riot-split-col">
-            <span class="riot-split-title">LoL</span>
+            <div class="riot-split-col-header">
+              <span class="riot-split-title">LoL</span>
+              <label class="toggle toggle--sm" id="lol-privacy-toggle" style="display:none;" title="공개/비공개">
+                <input type="checkbox" id="lol-privacy-input">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
             <img id="riot-lol-tier-img" class="riot-split-tier-img" src="" alt="" hidden>
             <span id="riot-lol-name" class="riot-split-value">-</span>
             <span id="riot-lol-tier" class="riot-split-tier">-</span>
             <button type="button" id="btn-lol-action" class="btn-riot-register">Register</button>
-            <button type="button" class="privacy-chip" id="lol-privacy-chip" style="display: none;" data-public="true">
-              <svg class="privacy-chip-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span class="privacy-chip-label">공개 중</span>
-            </button>
           </div>
           <div class="riot-split-divider"></div>
           <div class="riot-split-col">
-            <span class="riot-split-title">TFT</span>
+            <div class="riot-split-col-header">
+              <span class="riot-split-title">TFT</span>
+              <label class="toggle toggle--sm" id="tft-privacy-toggle" style="display:none;" title="공개/비공개">
+                <input type="checkbox" id="tft-privacy-input">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
             <img id="riot-tft-tier-img" class="riot-split-tier-img" src="" alt="" hidden>
             <span id="riot-tft-name" class="riot-split-value">-</span>
             <span id="riot-tft-tier" class="riot-split-tier">-</span>
             <button type="button" id="btn-tft-action" class="btn-riot-register">Register</button>
-            <button type="button" class="privacy-chip" id="tft-privacy-chip" style="display: none;" data-public="true">
-              <svg class="privacy-chip-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span class="privacy-chip-label">공개 중</span>
-            </button>
-            </div>
           </div>
-        </div>
-        <div id="riot-hint-chzzk" class="auth-hint auth-hint--checklist">
-          <p class="auth-check">
-            <span>Chzzk 로그인</span>
-            <span class="auth-check-icon" id="riot-check-chzzk-icon">✕</span>
-          </p>
+          </div>
         </div>
         <button type="button" id="btn-riot-logout" class="btn-disconnect">Logout</button>
       </div>
