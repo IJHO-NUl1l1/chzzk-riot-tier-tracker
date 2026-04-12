@@ -1,11 +1,6 @@
-/**
- * Configuration module for application settings
- */
-
 class Config {
   constructor() {
     this.settings = {
-      // Default settings
       region: 'kr',
       devMode: false,
       showLol: true,
@@ -14,7 +9,6 @@ class Config {
     this.loadSettings();
   }
 
-  // Load settings from storage
   async loadSettings() {
     try {
       const data = await new Promise((resolve) => {
@@ -32,7 +26,6 @@ class Config {
     }
   }
 
-  // Save settings to storage
   async saveSettings() {
     try {
       await new Promise((resolve) => {
@@ -48,38 +41,31 @@ class Config {
     }
   }
 
-  // Get a setting value
   getSetting(key, defaultValue = null) {
     return this.settings[key] !== undefined ? this.settings[key] : defaultValue;
   }
   
-  // Set a setting value
   async setSetting(key, value) {
     this.settings[key] = value;
     return await this.saveSettings();
   }
 
-  // Get region
   getRegion() {
     return this.settings.region || 'kr';
   }
   
-  // Set region
   async setRegion(region) {
     return await this.setSetting('region', region);
   }
 
-  // Get dev mode
   isDevMode() {
     return this.settings.devMode || false;
   }
   
-  // Set dev mode
   async setDevMode(enabled) {
     return await this.setSetting('devMode', enabled);
   }
 }
 
-// Create and export a singleton instance
 const config = new Config();
 export default config;

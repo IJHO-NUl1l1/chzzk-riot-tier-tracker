@@ -1,28 +1,13 @@
-/**
- * Proxy client for communicating with the proxy server
- */
-
 import proxyConfig from './config.js';
 
 class ProxyClient {
-  /**
-   * Get the current base URL
-   * @returns {string} Base URL
-   */
   getBaseUrl() {
     return proxyConfig.current.baseUrl;
   }
   
-  /**
-   * Make a GET request to the proxy server
-   * @param {string} endpoint - API endpoint
-   * @param {Object} params - URL parameters
-   * @returns {Promise<Object>} Response data
-   */
   async get(endpoint, params = {}) {
     const url = new URL(`${proxyConfig.current.baseUrl}${endpoint}`);
 
-    // Add URL parameters
     Object.keys(params).forEach(key => {
       url.searchParams.append(key, params[key]);
     });
@@ -57,12 +42,6 @@ class ProxyClient {
     }
   }
 
-  /**
-   * Make a POST request to the proxy server
-   * @param {string} endpoint - API endpoint
-   * @param {Object} body - Request body
-   * @returns {Promise<Object>} Response data
-   */
   async post(endpoint, body = {}, options = {}) {
     const url = `${proxyConfig.current.baseUrl}${endpoint}`;
 
@@ -97,12 +76,6 @@ class ProxyClient {
       throw error;
     }
   }
-  /**
-   * Make a DELETE request to the proxy server
-   * @param {string} endpoint - API endpoint
-   * @param {Object} params - URL parameters
-   * @returns {Promise<Object>} Response data
-   */
   async delete(endpoint, params = {}, options = {}) {
     const url = new URL(`${proxyConfig.current.baseUrl}${endpoint}`);
 
@@ -141,6 +114,5 @@ class ProxyClient {
   }
 }
 
-// Create and export a singleton instance
 const proxyClient = new ProxyClient();
 export default proxyClient;

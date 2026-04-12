@@ -1,8 +1,6 @@
 import api from './js/api/index.js';
 import config from './js/config.js';
 
-// ==================== JWT ====================
-
 async function getAuthHeaders() {
   const { jwt_token } = await chrome.storage.local.get(['jwt_token']);
   return jwt_token ? { 'Authorization': `Bearer ${jwt_token}` } : {};
@@ -42,8 +40,6 @@ async function getLiveId() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   return tab?.url?.match(/\/live\/([^/?#]+)/)?.[1] ?? null;
 }
-
-// ==================== Chzzk Auth ====================
 
 function setButtonLoading(btn, loading, loadingText) {
   if (!btn) return;
@@ -104,7 +100,6 @@ function updateChzzkAuthUI(authData) {
     channelName.textContent = '-';
   }
 
-  // Riot UI depends on Chzzk state
   loadRiotAuthData();
 }
 
@@ -114,8 +109,6 @@ async function loadChzzkAuthData() {
   });
   updateChzzkAuthUI(data || null);
 }
-
-// ==================== Riot Auth (Beta — 3단계) ====================
 
 function showRiotLoading(show) {
   const loading = document.getElementById('riot-loading');
@@ -130,7 +123,6 @@ function showRiotLoading(show) {
   }
 }
 
-// Fill a single column (LoL or TFT) with tier data
 function fillTierColumn(prefix, data) {
   const nameEl = document.getElementById(`riot-${prefix}-name`);
   const tierEl = document.getElementById(`riot-${prefix}-tier`);
@@ -161,7 +153,6 @@ function fillTierColumn(prefix, data) {
   }
 }
 
-// Set column button state: Register or Unlink
 function setColumnButton(btnId, isRegistered, isEnabled) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
@@ -176,7 +167,6 @@ function setColumnButton(btnId, isRegistered, isEnabled) {
   }
 }
 
-// Show/hide privacy toggle and set its state
 function setPrivacyToggle(gameType, visible, isPublic) {
   const label = document.getElementById(`${gameType}-privacy-toggle`);
   const input = document.getElementById(`${gameType}-privacy-input`);
@@ -185,40 +175,34 @@ function setPrivacyToggle(gameType, visible, isPublic) {
   input.checked = isPublic !== false;
 }
 
-// Main UI update — handles all 3 stages
 function updateRiotUI(riotConnected, lolDbEntry, tftDbEntry, lolSearchData, tftSearchData, chzzkConnected) {
   document.getElementById('riot-loading').style.display = 'none';
   const disconnected = document.getElementById('riot-disconnected');
   const connected = document.getElementById('riot-connected');
 
   if (!riotConnected) {
-    // Stage 1: disconnected
     disconnected.style.display = 'flex';
     connected.style.display = 'none';
 
     return;
   }
 
-  // Stage 2/3: connected
   disconnected.style.display = 'none';
   connected.style.display = 'flex';
 
   const lolRegistered = !!lolDbEntry;
   const tftRegistered = !!tftDbEntry;
 
-  // LoL column: DB data takes priority, fallback to search data
   fillTierColumn('lol', lolDbEntry || lolSearchData || null);
   setColumnButton('btn-lol-action', lolRegistered, chzzkConnected);
   setPrivacyToggle('lol', lolRegistered, lolDbEntry?.isPublic);
 
-  // TFT column: same logic
   fillTierColumn('tft', tftDbEntry || tftSearchData || null);
   setColumnButton('btn-tft-action', tftRegistered, chzzkConnected);
   setPrivacyToggle('tft', tftRegistered, tftDbEntry?.isPublic);
 
 }
 
-// Normalize DB entry to match search data shape
 function dbEntryToData(entry) {
   if (!entry) return null;
   return {
@@ -232,7 +216,6 @@ function dbEntryToData(entry) {
   };
 }
 
-// Cached DB state for button handlers
 let _riotDbState = { lolEntry: null, tftEntry: null };
 
 async function loadRiotAuthData() {
@@ -248,8 +231,6 @@ async function loadRiotAuthData() {
   let lolDbEntry = null;
   let tftDbEntry = null;
 
-  // riotConnected: search 데이터가 있으면 2단계 (chzzk 연결과 무관)
-  // 1단계는 search 캐시가 없거나 유저가 직접 Logout 했을 때만
   let riotConnected = !!(lolSearch || tftSearch);
 
   if (chzzkConnected) {
@@ -260,7 +241,6 @@ async function loadRiotAuthData() {
         lolDbEntry = dbResult.entries.find(e => e.game_type === 'lol') || null;
         tftDbEntry = dbResult.entries.find(e => e.game_type === 'tft') || null;
       }
-      // DB에 데이터 있어도 riotConnected
       if (lolDbEntry || tftDbEntry) riotConnected = true;
     } catch (e) {
       console.error('Failed to check tier cache:', e);
@@ -271,16 +251,13 @@ async function loadRiotAuthData() {
   updateRiotUI(riotConnected, dbEntryToData(lolDbEntry), dbEntryToData(tftDbEntry), lolSearch, tftSearch, chzzkConnected);
 }
 
-// Stage 1 → Stage 2: OAuth button (Beta: just switch to connected view)
 function handleRiotOAuth() {
-  // Beta: 바로 2단계로 전환 — search 데이터 기반으로 표시
   const disconnected = document.getElementById('riot-disconnected');
   const connected = document.getElementById('riot-connected');
   disconnected.style.display = 'none';
   connected.style.display = 'flex';
 }
 
-// Register a single game type to DB
 async function handleGameRegister(gameType) {
   const btnId = gameType === 'lol' ? 'btn-lol-action' : 'btn-tft-action';
   const prefix = gameType === 'lol' ? 'lol' : 'tft';
@@ -315,7 +292,6 @@ async function handleGameRegister(gameType) {
     const liveId = await getLiveId();
     await withAuth((headers) => api.chzzk.saveTierCache(chzzkAuth.channelId, [entry], headers, liveId));
 
-    // Brief success indicator then update only this column
     btn.textContent = '✔';
     btn.classList.remove('is-loading');
     btn.classList.add('is-success');
@@ -331,7 +307,6 @@ async function handleGameRegister(gameType) {
   }
 }
 
-// Unlink a single game type from DB
 async function handleGameUnlink(gameType) {
   const btnId = gameType === 'lol' ? 'btn-lol-action' : 'btn-tft-action';
   const prefix = gameType === 'lol' ? 'lol' : 'tft';
@@ -351,7 +326,6 @@ async function handleGameUnlink(gameType) {
       await withAuth((headers) => api.chzzk.deleteTierCache(chzzkAuth.channelId, gameType, headers, liveId));
     }
 
-    // Update only this column — fallback to search data
     const searchData = result[storageKey] || null;
     fillTierColumn(prefix, searchData);
     setColumnButton(btnId, false, chzzkConnected);
@@ -362,7 +336,6 @@ async function handleGameUnlink(gameType) {
   }
 }
 
-// Column button click dispatcher
 function handleLolAction() {
   const btn = document.getElementById('btn-lol-action');
   if (btn && btn.classList.contains('btn-riot-col-unlink')) {
@@ -381,7 +354,6 @@ function handleTftAction() {
   }
 }
 
-// Logout: delete all tier_cache + go back to stage 1
 async function handleRiotLogout() {
   const btn = document.getElementById('btn-riot-logout');
   setButtonLoading(btn, true, '...');
@@ -402,7 +374,6 @@ async function handleRiotLogout() {
   await loadRiotAuthData();
 }
 
-// Auto-update UI when storage changes
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.chzzkAuth) {
     updateChzzkAuthUI(changes.chzzkAuth.newValue || null);
@@ -412,14 +383,12 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 });
 
-// CSS 변수에서 티어 색상을 가져오는 함수
 function getTierColor(tier) {
   if (!tier) return 'var(--tier-unranked)';
   if (tier.toLowerCase() === 'emerald') return '#0ac3a6';
   return `var(--tier-${tier.toLowerCase()})`;
 }
 
-// 티어 이미지 URL을 가져오는 함수
 function getTierImageUrl(tier) {
   if (!tier || tier.toUpperCase() === 'UNRANKED') {
     return 'images/RankedEmblemsLatest/Rank=Iron.png';
@@ -433,19 +402,14 @@ function getTierImageUrl(tier) {
   return `images/RankedEmblemsLatest/Rank=${name}.png`;
 }
 
-// Global variables
 let currentSummonerData = null;
 let currentRankData = null;
 let currentPuuid = null;
 
-// TFT global variables
 let tftSummonerData = null;
 let tftRankData = null;
 let tftPuuid = null;
 
-/**
- * 상태 메시지 표시 함수
- */
 function showStatusMessage(element, message, type = '') {
   if (!element) return;
   element.classList.remove('info', 'success', 'error');
@@ -456,8 +420,6 @@ function showStatusMessage(element, message, type = '') {
     element.textContent = '';
   }
 }
-
-// ==================== Page Navigation ====================
 
 function setupPageNav() {
   const navItems = document.querySelectorAll('.nav-item');
@@ -472,7 +434,6 @@ function setupPageNav() {
     bubble.style.width = `${targetRect.width}px`;
   }
 
-  // Initial position
   const activeItem = document.querySelector('.nav-item.active');
   if (activeItem && bubble) {
     requestAnimationFrame(() => {
@@ -496,28 +457,22 @@ function setupPageNav() {
   });
 }
 
-// ==================== Tab Navigation ====================
-
 function setupTabs() {
   const tabButtons = document.querySelectorAll('.tab-btn');
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
-      // Update buttons
       tabButtons.forEach(b => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
       });
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
-      // Update content
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById(`${tab}-content`).classList.add('active');
     });
   });
 }
-
-// ==================== LoL Functions ====================
 
 async function handleSummonerLookup() {
   const riotStatusMessage = document.getElementById('riot-status-message');
@@ -624,8 +579,6 @@ function updateUIWithSummonerData() {
   }
 }
 
-// ==================== TFT Functions ====================
-
 async function handleTftLookup() {
   const statusMessage = document.getElementById('tft-status-message');
   const nameInput = document.getElementById('tft-summoner-name-input');
@@ -726,8 +679,6 @@ function updateUIWithTftData() {
   }
 }
 
-// ==================== Tier Storage ====================
-
 async function saveSummonerTier() {
   try {
     const existing = await new Promise((resolve) => {
@@ -780,8 +731,6 @@ async function saveTftTier() {
   }
 }
 
-// ==================== Privacy Toggle ====================
-
 async function handlePrivacyToggle(gameType, isPublic) {
   try {
     const chzzkAuth = await new Promise((resolve) => {
@@ -795,11 +744,6 @@ async function handlePrivacyToggle(gameType, isPublic) {
     console.error(`Failed to update privacy for ${gameType}:`, e);
   }
 }
-
-// ==================== Server Sync ====================
-
-
-// ==================== Storage ====================
 
 async function saveSummonerData(data) {
   try {
@@ -840,9 +784,14 @@ async function loadSavedSummonerData() {
         config.setSetting('region', data.region);
       }
 
-      await fetchSummonerDetails();
+      // Skip Riot API re-fetch if tier data is already cached in storage — fresh fetch only on explicit Search page lookup.
+      if (data.tier === undefined) {
+        await fetchSummonerDetails();
+        await saveSummonerTier();
+      } else {
+        currentRankData = data.tier ? [{ queueType: 'RANKED_SOLO_5x5', tier: data.tier, rank: data.rank, leaguePoints: data.lp }] : [];
+      }
       updateUIWithSummonerData();
-      await saveSummonerTier();
     }
   } catch (error) {
     console.error('Error loading saved summoner data:', error);
@@ -865,31 +814,28 @@ async function loadSavedTftData() {
       if (tagInput && data.tagLine) tagInput.value = data.tagLine;
       if (regionSelect && data.region) regionSelect.value = data.region;
 
-      await fetchTftDetails(data.region);
+      if (data.tier === undefined) {
+        await fetchTftDetails(data.region);
+        await saveTftTier();
+      } else {
+        tftRankData = data.tier ? [{ queueType: 'RANKED_TFT', tier: data.tier, rank: data.rank, leaguePoints: data.lp }] : [];
+      }
       updateUIWithTftData();
-      await saveTftTier();
     }
   } catch (error) {
     console.error('Error loading saved TFT data:', error);
   }
 }
 
-// ==================== Init ====================
-
 document.addEventListener('DOMContentLoaded', async () => {
-  // Page navigation
   setupPageNav();
-
-  // Tab navigation
   setupTabs();
 
-  // Chzzk auth buttons
   const btnChzzkLogin = document.getElementById('btn-chzzk-login');
   if (btnChzzkLogin) btnChzzkLogin.addEventListener('click', handleChzzkLogin);
   const btnChzzkLogout = document.getElementById('btn-chzzk-logout');
   if (btnChzzkLogout) btnChzzkLogout.addEventListener('click', handleChzzkLogout);
 
-  // Riot auth buttons (3-stage)
   const btnRiotOAuth = document.getElementById('btn-riot-oauth');
   if (btnRiotOAuth) btnRiotOAuth.addEventListener('click', handleRiotOAuth);
   const btnLolAction = document.getElementById('btn-lol-action');
@@ -899,7 +845,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnRiotLogout = document.getElementById('btn-riot-logout');
   if (btnRiotLogout) btnRiotLogout.addEventListener('click', handleRiotLogout);
 
-  // LoL button + Enter key
   const connectRiotBtn = document.getElementById('connect-riot');
   if (connectRiotBtn) {
     connectRiotBtn.addEventListener('click', handleSummonerLookup);
@@ -910,7 +855,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // TFT button + Enter key
   const connectTftBtn = document.getElementById('connect-tft');
   if (connectTftBtn) {
     connectTftBtn.addEventListener('click', handleTftLookup);
@@ -921,7 +865,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Region change events
   const regionSelect = document.getElementById('region-select');
   if (regionSelect) {
     regionSelect.addEventListener('change', () => {
@@ -937,7 +880,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     tftRegionSelect.value = savedRegion;
   }
 
-  // Badge display settings
   const showLolToggle = document.getElementById('setting-show-lol');
   const showTftToggle = document.getElementById('setting-show-tft');
 
@@ -958,7 +900,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Default region setting
   const defaultRegionSelect = document.getElementById('setting-default-region');
   if (defaultRegionSelect) {
     const savedRegion = config.getSetting('region', 'kr');
@@ -967,13 +908,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     defaultRegionSelect.addEventListener('change', () => {
       const newRegion = defaultRegionSelect.value;
       config.setSetting('region', newRegion);
-      // Search 페이지의 region select도 동기화
       if (regionSelect) regionSelect.value = newRegion;
       if (tftRegionSelect) tftRegionSelect.value = newRegion;
     });
   }
 
-  // Privacy toggles
   const lolPrivacyInput = document.getElementById('lol-privacy-input');
   const tftPrivacyInput = document.getElementById('tft-privacy-input');
   if (lolPrivacyInput) {
@@ -987,7 +926,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Load Chzzk auth first (Riot button state depends on it), then rest in parallel
   await loadChzzkAuthData();
   await Promise.all([loadRiotAuthData(), loadSavedSummonerData(), loadSavedTftData()]);
 });

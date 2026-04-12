@@ -14,7 +14,7 @@
 
 | 역할 | 레포지토리 | 배포 |
 |------|-----------|------|
-| Chrome Extension | [chzzk-lol-tier](https://github.com/IJHO-NUl1l1/chzzk-lol-tier) | Chrome 개발자 모드 |
+| Chrome Extension | [chzzk-lol-tier-tracker](https://github.com/IJHO-NUl1l1/chzzk-lol-tier) | Chrome 개발자 모드 |
 | Fastify 서버 | [chzzk-riot-tier-tracker-fastify](https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-fastify) | Railway |
 | Web (랜딩 + OBS 오버레이) | [chzzk-riot-tier-tracker-web](https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web) | Vercel |
 

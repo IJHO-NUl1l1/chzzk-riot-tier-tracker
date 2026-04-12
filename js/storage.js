@@ -1,6 +1,5 @@
 // Data storage and management module - UI test simplified version
 const PersistentStorage = {
-  // Riot user data related methods
   async getRiotUserData() {
     console.log('UI test mode getRiotUserData call');
     return null;
@@ -16,7 +15,6 @@ const PersistentStorage = {
     return true;
   },
   
-  // Tier info related methods
   async getTierInfo() {
     console.log('UI test mode getTierInfo call');
     return {
@@ -33,7 +31,6 @@ const PersistentStorage = {
     return true;
   },
   
-  // Settings related methods
   async getSettings() {
     console.log('UI test mode getSettings call');
     return {
@@ -50,5 +47,4 @@ const PersistentStorage = {
   }
 };
 
-// Export module
 export default PersistentStorage;

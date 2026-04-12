@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  // ==================== Constants ====================
-
   const SERVER_URL = 'https://chzzk-riot-tier-tracker-fastify-production.up.railway.app';
   const API_ENDPOINT = `${SERVER_URL}/api/tier`;
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -58,8 +56,6 @@
     nickname: '[class*="live_chatting_username_nickname"]',
   };
 
-  // ==================== State ====================
-
   function isContextValid() {
     try { return !!chrome.runtime?.id; } catch { return false; }
   }
@@ -70,14 +66,11 @@
   let settings = { showLol: true, showTft: true };
   let tooltipEl = null;
 
-  // Realtime state
   let realtimeClient = null;
   let realtimeChannel = null;
   let reconnectTimer = null;
   let reconnectCount = 0;
   let pollTimer = null;
-
-  // ==================== Settings ====================
 
   function initSettings() {
     chrome.storage.local.get(['settings'], (result) => {
@@ -99,8 +92,6 @@
     }
   });
 
-  // ==================== API ====================
-
   async function fetchTierData(nickname) {
     const cached = tierCache.get(nickname);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -121,8 +112,6 @@
     }
   }
 
-  // ==================== Batch Processing ====================
-
   function queueNickname(nickname) {
     pendingNicknames.add(nickname);
     if (batchTimer) clearTimeout(batchTimer);
@@ -142,8 +131,6 @@
     );
   }
 
-  // ==================== Message Processing ====================
-
   function processNewMessage(msgEl) {
     if (msgEl.hasAttribute(PROCESSED_ATTR)) return;
 
@@ -156,14 +143,12 @@
     msgEl.setAttribute(PROCESSED_ATTR, '');
     msgEl.setAttribute('data-crtt-nick', nickname);
 
-    // Check cache first
     const cached = tierCache.get(nickname);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       injectBadge(msgEl, cached.data);
       return;
     }
 
-    // Queue for batch fetch
     queueNickname(nickname);
   }
 
@@ -177,8 +162,6 @@
       }
     });
   }
-
-  // ==================== Badge Injection ====================
 
   function injectBadge(msgEl, entries) {
     if (!isContextValid()) return;
@@ -194,7 +177,6 @@
     const badgeContainer = document.createElement('span');
     badgeContainer.className = 'crtt-badge-wrapper';
 
-    // entries를 순회하면서 **현재 settings에 따라** 필터링
     entries.forEach((entry) => {
       if (entry.game_type === 'lol' && !settings.showLol) return;
       if (entry.game_type === 'tft' && !settings.showTft) return;
@@ -203,25 +185,24 @@
       const tierUpper = entry.tier.toUpperCase();
       const tierImgName = TIER_IMG_MAP[tierUpper];
 
-      if (!tierImgName) return; // 매핑 없는 티어는 스킵
+      if (!tierImgName) return;
 
       const imgSrc = chrome.runtime.getURL(
         `images/RankedEmblemsLatest/Rank=${tierImgName}.png`
       );
 
       const badge = document.createElement('span');
-      badge.className = 'crtt-tier-badge';  // 클래스 이름 변경 (CSS 구분용)
+      badge.className = 'crtt-tier-badge';
       badge.dataset.gameType = entry.game_type;
       badge._tierEntry = entry;
 
-      // 이미지 요소 생성
       const img = document.createElement('img');
       img.src = imgSrc;
       img.alt = `${entry.tier} ${entry.rank || ''}`;
-      img.width = 20;   // 크기 조절 (원하는 대로 변경)
+      img.width = 20;
       img.height = 20;
       img.style.verticalAlign = 'middle';
-      img.style.marginRight = '2px';  // 배지 간 간격
+      img.style.marginRight = '2px';
 
       badge.appendChild(img);
 
@@ -231,17 +212,13 @@
       badgeContainer.appendChild(badge);
     });
 
-    // 실제 배지가 하나라도 생겼을 때만 삽입
     if (badgeContainer.children.length > 0) {
-      // 기존 배지 제거 후 새로 넣기 (중복 방지)
       const existing = targetParent.querySelector('.crtt-badge-wrapper');
       if (existing) existing.remove();
 
       targetParent.insertBefore(badgeContainer, nicknameEl);
     }
   }
-
-  // ==================== Tooltip ====================
 
   function ensureTooltip() {
     if (tooltipEl) return;
@@ -321,13 +298,9 @@
     return div.innerHTML;
   }
 
-  // ==================== Re-render ====================
-
   function rerenderAllBadges() {
-    // 기존 배지만 제거 (캐시는 보존 — API 재호출 불필요)
     document.querySelectorAll('.crtt-badge-wrapper').forEach((el) => el.remove());
 
-    // processed 메시지들에 대해 캐시에서 바로 배지 재삽입
     document.querySelectorAll(`[${PROCESSED_ATTR}]`).forEach((el) => {
       const nick = el.getAttribute('data-crtt-nick');
       if (!nick) return;
@@ -338,27 +311,77 @@
     });
   }
 
-  // ==================== Realtime ====================
-
   function getBroadcastId() {
     const match = location.pathname.match(/\/live\/([^/?#]+)/);
     return match ? match[1] : null;
   }
 
-  function rerenderSpecificBadges(nickname) {
-    tierCache.delete(nickname);
+  function rerenderBadgesFromCache(nickname) {
     const escapedNick = CSS.escape(nickname);
     document.querySelectorAll(`[data-crtt-nick="${escapedNick}"]`).forEach((msg) => {
       msg.querySelector('.crtt-badge-wrapper')?.remove();
+      const cached = tierCache.get(nickname);
+      if (cached && cached.data.length > 0) {
+        injectBadge(msg, cached.data);
+      }
     });
-    queueNickname(nickname);
   }
 
   function handleRealtimeEvent(event, payload) {
     const { chzzkChannelName } = payload;
     if (!chzzkChannelName) return;
-    console.log(`[CRTT] Realtime event: ${event}, nickname: ${chzzkChannelName}`);
-    rerenderSpecificBadges(chzzkChannelName);
+
+    const existing = tierCache.get(chzzkChannelName);
+
+    if (event === 'tier_updated') {
+      const { gameType, tier, rank, leaguePoints, isPublic, riotGameName, riotTagLine } = payload;
+
+      if (!existing) {
+        queueNickname(chzzkChannelName);
+        return;
+      }
+
+      const updatedData = existing.data.filter((e) => e.game_type !== gameType);
+      if (isPublic !== false) {
+        updatedData.push({
+          game_type: gameType,
+          tier: tier ?? null,
+          rank: rank ?? null,
+          league_points: leaguePoints ?? 0,
+          riot_game_name: riotGameName ?? null,
+          riot_tag_line: riotTagLine ?? null,
+        });
+      }
+      tierCache.set(chzzkChannelName, { data: updatedData, timestamp: Date.now() });
+      rerenderBadgesFromCache(chzzkChannelName);
+
+    } else if (event === 'tier_deleted') {
+      const { gameType } = payload;
+
+      if (!existing) return;
+
+      const updatedData = gameType
+        ? existing.data.filter((e) => e.game_type !== gameType)
+        : [];
+
+      tierCache.set(chzzkChannelName, { data: updatedData, timestamp: Date.now() });
+      rerenderBadgesFromCache(chzzkChannelName);
+
+    } else if (event === 'privacy_changed') {
+      const { gameType, isPublic } = payload;
+
+      if (!existing) return;
+
+      const updatedData = existing.data.map((e) => {
+        if (!gameType || e.game_type === gameType) {
+          return { ...e, is_public: isPublic };
+        }
+        return e;
+      }).filter((e) => e.is_public !== false);
+
+      tierCache.set(chzzkChannelName, { data: updatedData, timestamp: Date.now() });
+      rerenderBadgesFromCache(chzzkChannelName);
+    }
   }
 
   function startPollFallback() {
@@ -418,8 +441,6 @@
     });
   }
 
-  // ==================== MutationObserver ====================
-
   let chatObserver = null;
 
   function startObserver() {
@@ -428,7 +449,6 @@
       chatObserver = null;
     }
 
-    // Process already-existing chat messages
     document.querySelectorAll(SEL.chatItem).forEach(processNewMessage);
 
     // Observe document.body directly — resilient to chatWrapper unmount/remount
@@ -449,8 +469,6 @@
     console.log('[CRTT] MutationObserver attached to document.body');
   }
 
-  // ==================== SPA Route Change Detection ====================
-
   function initRouteObserver() {
     let lastUrl = location.href;
 
@@ -465,8 +483,6 @@
       }
     }).observe(document, { subtree: true, childList: true });
   }
-
-  // ==================== Init ====================
 
   initSettings();
   startObserver();

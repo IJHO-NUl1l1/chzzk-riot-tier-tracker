@@ -1,10 +1,7 @@
-// Background script
-console.log('Chzzk LoL Tier Extension background script loaded');
-
 const SERVER_URL = 'https://chzzk-riot-tier-tracker-fastify-production.up.railway.app';
 const AUTH_SUCCESS_PATH = '/auth/success';
 
-// Persist authTabId in session storage (survives service worker restart)
+// authTabId persisted in session storage to survive service worker restarts
 async function getAuthTabId() {
   const result = await chrome.storage.session.get('authTabId');
   return result.authTabId || null;
@@ -14,7 +11,6 @@ async function setAuthTabId(tabId) {
   await chrome.storage.session.set({ authTabId: tabId });
 }
 
-// Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'chzzk_login') {
     sendResponse({ status: 'opening' });
@@ -23,7 +19,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// Open auth tab (or focus existing one)
 async function openAuthTab() {
   const existingTabId = await getAuthTabId();
 
@@ -44,16 +39,14 @@ async function openAuthTab() {
   await setAuthTabId(tab.id);
 }
 
-// Detect auth success by checking tab URL on every update
+// Detect auth success — check on URL change and page load complete
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Check on both URL change and page load complete
   if (!changeInfo.url && changeInfo.status !== 'complete') return;
 
-  // Use tab.url (always has full URL) instead of changeInfo.url (only on URL change)
+  // tab.url always has full URL; changeInfo.url is only set on URL change
   const url = tab.url;
   if (!url || !url.includes(AUTH_SUCCESS_PATH) || !url.includes('channelId=')) return;
 
-  // Only process our auth tab (or any tab if session lost)
   const savedTabId = await getAuthTabId();
   if (savedTabId !== null && savedTabId !== tabId) return;
 
@@ -86,7 +79,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
-// Clean up if user closes the auth tab manually
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const savedTabId = await getAuthTabId();
   if (tabId === savedTabId) {
