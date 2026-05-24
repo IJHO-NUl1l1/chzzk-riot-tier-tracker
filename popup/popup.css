@@ -1016,8 +1016,8 @@ button:disabled::after {
   transition: color 0.15s, background 0.15s, box-shadow 0.15s, opacity 0.15s;
 }
 
-/* Register hover — green */
-.btn-riot-register:hover {
+/* Register hover — green (disabled 제외) */
+.btn-riot-register:not(:disabled):hover {
   color: #22c55e;
   background: rgba(34, 197, 94, 0.1);
   box-shadow: 0 0 8px rgba(34, 197, 94, 0.25);
@@ -1025,7 +1025,10 @@ button:disabled::after {
 
 .btn-riot-register:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.35;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-muted);
+  box-shadow: none;
 }
 
 .btn-riot-register.is-loading {

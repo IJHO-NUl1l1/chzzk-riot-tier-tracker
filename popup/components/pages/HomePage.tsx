@@ -9,7 +9,7 @@ import { useRiotAuth } from '../../hooks/useRiotAuth';
 
 export default function HomePage({ onGoToSearch }: { onGoToSearch?: () => void }) {
   const { auth, login, logout } = useChzzkAuth();
-  const { lolEntry, tftEntry, loading, register, unlink, togglePrivacy, logout: riotLogout } = useRiotAuth(auth);
+  const { lolEntry, tftEntry, loading, unlink, togglePrivacy, logout: riotLogout } = useRiotAuth(auth);
 
   const [lolSearch, setLolSearch] = useState<any>(null);
   const [tftSearch, setTftSearch] = useState<any>(null);
@@ -38,7 +38,6 @@ export default function HomePage({ onGoToSearch }: { onGoToSearch?: () => void }
         lolSearchData={lolSearch}
         tftSearchData={tftSearch}
         loading={loading}
-        onRegister={register}
         onUnlink={unlink}
         onTogglePrivacy={togglePrivacy}
         onLogout={riotLogout}

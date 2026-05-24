@@ -1,4 +1,3 @@
-import React from 'react';
 import { getTierColor, getTierImageUrl } from '../lib/tier';
 import type { TierEntry, GameType } from '../types';
 
@@ -7,17 +6,17 @@ interface Props {
   entry: TierEntry | null;
   searchData: { gameName: string; tier: string | null; rank: string | null; lp: number } | null;
   isChzzkConnected: boolean;
-  onRegister: () => void;
   onUnlink: () => void;
   onTogglePrivacy: (isPublic: boolean) => void;
   onGoToSearch?: () => void;
 }
 
 export default function TierColumn({
-  gameType, entry, searchData, isChzzkConnected, onRegister, onUnlink, onTogglePrivacy, onGoToSearch,
+  gameType, entry, searchData, isChzzkConnected, onUnlink, onTogglePrivacy, onGoToSearch,
 }: Props) {
   const display = entry ?? searchData ?? null;
   const isRegistered = !!entry;
+  const hasSearchData = !!searchData && !isRegistered;
   const label = gameType.toUpperCase();
 
   return (
@@ -77,14 +76,31 @@ export default function TierColumn({
           Unlink
         </button>
       ) : (
-        <button
-          type="button"
-          className="btn-riot-register"
-          disabled={!isChzzkConnected}
-          onClick={onRegister}
-        >
-          Register
-        </button>
+        <>
+          <button
+            type="button"
+            className="btn-riot-register"
+            disabled
+          >
+            Register
+          </button>
+          {hasSearchData && isChzzkConnected && (
+            <span
+              onClick={onGoToSearch}
+              style={{
+                display: 'block',
+                marginTop: 4,
+                fontSize: 10,
+                color: '#ef4444',
+                cursor: 'pointer',
+                textAlign: 'center',
+                lineHeight: 1.4,
+              }}
+            >
+              ⚠ 인증 후 등록할 수 있습니다
+            </span>
+          )}
+        </>
       )}
     </div>
   );

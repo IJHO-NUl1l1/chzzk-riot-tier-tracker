@@ -44,12 +44,18 @@ function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
     });
   }, [gameType]);
 
-  // 인증 완료 시 자동 등록
-  useEffect(() => {
-    if (state === 'done') {
-      register(gameType).then(() => onVerifyDone()).catch(console.error);
+  const [registering, setRegistering] = useState(false);
+
+  const handleRegister = async () => {
+    setRegistering(true);
+    try {
+      await register(gameType);
+      onVerifyDone();
+    } catch (e) {
+      console.error(e);
     }
-  }, [state]);
+    setRegistering(false);
+  };
 
   const handleSearch = () => {
     if (!gameName.trim() || !tagLine.trim()) return;
@@ -119,6 +125,17 @@ function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
           onConfirm={() => confirm(result.puuid, gameType, region)}
           onCancel={reset}
         />
+      )}
+      {result && (
+        <button
+          type="button"
+          className="btn-riot-register"
+          onClick={handleRegister}
+          disabled={state !== 'done' || registering}
+          style={{ marginTop: 8, width: '100%' }}
+        >
+          {registering ? '등록 중...' : 'Register'}
+        </button>
       )}
     </>
   );
