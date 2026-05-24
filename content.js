@@ -370,17 +370,19 @@
     } else if (event === 'privacy_changed') {
       const { gameType, isPublic } = payload;
 
-      if (!existing) return;
-
-      const updatedData = existing.data.map((e) => {
-        if (!gameType || e.game_type === gameType) {
-          return { ...e, is_public: isPublic };
-        }
-        return e;
-      }).filter((e) => e.is_public !== false);
-
-      tierCache.set(chzzkChannelName, { data: updatedData, timestamp: Date.now() });
-      rerenderBadgesFromCache(chzzkChannelName);
+      if (isPublic) {
+        tierCache.delete(chzzkChannelName);
+        fetchTierData(chzzkChannelName).then((data) => {
+          injectBadgesForNickname(chzzkChannelName, data);
+        });
+      } else {
+        if (!existing) return;
+        const updatedData = existing.data
+          .map((e) => (!gameType || e.game_type === gameType) ? { ...e, is_public: false } : e)
+          .filter((e) => e.is_public !== false);
+        tierCache.set(chzzkChannelName, { data: updatedData, timestamp: Date.now() });
+        rerenderBadgesFromCache(chzzkChannelName);
+      }
     }
   }
 
