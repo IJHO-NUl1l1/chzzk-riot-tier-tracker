@@ -45,6 +45,16 @@ export async function withAuth<T>(fn: (headers: Record<string, string>) => Promi
 }
 
 export async function getLiveId(): Promise<string | null> {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tab?.url?.match(/\/live\/([^/?#]+)/)?.[1] ?? null;
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const url = activeTab?.url ?? '';
+
+  // chzzk.naver.com/live/{liveId}
+  const viewerMatch = url.match(/chzzk\.naver\.com\/live\/([^/?#]+)/);
+  if (viewerMatch) return viewerMatch[1];
+
+  // studio.chzzk.naver.com/{channelId}/live
+  const studioMatch = url.match(/studio\.chzzk\.naver\.com\/([^/?#]+)\/live/);
+  if (studioMatch) return studioMatch[1];
+
+  return null;
 }
