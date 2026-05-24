@@ -8,7 +8,10 @@ interface Props {
   tftEntry: TierEntry | null;
   lolSearchData: { gameName: string; tier: string | null; rank: string | null; lp: number } | null;
   tftSearchData: { gameName: string; tier: string | null; rank: string | null; lp: number } | null;
+  lolVerified: boolean;
+  tftVerified: boolean;
   loading: boolean;
+  onRegister: (gameType: GameType) => Promise<void>;
   onUnlink: (gameType: GameType) => Promise<void>;
   onTogglePrivacy: (gameType: GameType, isPublic: boolean) => Promise<void>;
   onLogout: () => Promise<void>;
@@ -17,13 +20,20 @@ interface Props {
 
 export default function RiotCard({
   auth, lolEntry, tftEntry, lolSearchData, tftSearchData,
-  loading, onUnlink, onTogglePrivacy, onLogout, onGoToSearch,
+  lolVerified, tftVerified, loading, onRegister, onUnlink, onTogglePrivacy, onLogout, onGoToSearch,
 }: Props) {
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState<GameType | null>(null);
   const [unlinkLoading, setUnlinkLoading] = useState<GameType | null>(null);
 
   const isChzzkConnected = !!auth?.channelId;
   const isRiotConnected = !!(lolEntry || tftEntry || lolSearchData || tftSearchData);
+
+  const handleRegister = async (gameType: GameType) => {
+    setRegisterLoading(gameType);
+    try { await onRegister(gameType); } catch (e) { console.error(e); }
+    setRegisterLoading(null);
+  };
 
   const handleUnlink = async (gameType: GameType) => {
     setUnlinkLoading(gameType);
@@ -110,6 +120,8 @@ export default function RiotCard({
           entry={lolEntry}
           searchData={lolSearchData}
           isChzzkConnected={isChzzkConnected}
+          isVerifiedSearch={lolVerified}
+          onRegister={() => handleRegister('lol')}
           onUnlink={() => handleUnlink('lol')}
           onTogglePrivacy={(v) => onTogglePrivacy('lol', v)}
           onGoToSearch={onGoToSearch}
@@ -120,6 +132,8 @@ export default function RiotCard({
           entry={tftEntry}
           searchData={tftSearchData}
           isChzzkConnected={isChzzkConnected}
+          isVerifiedSearch={tftVerified}
+          onRegister={() => handleRegister('tft')}
           onUnlink={() => handleUnlink('tft')}
           onTogglePrivacy={(v) => onTogglePrivacy('tft', v)}
           onGoToSearch={onGoToSearch}

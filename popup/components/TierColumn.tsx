@@ -6,13 +6,16 @@ interface Props {
   entry: TierEntry | null;
   searchData: { gameName: string; tier: string | null; rank: string | null; lp: number } | null;
   isChzzkConnected: boolean;
+  isVerifiedSearch: boolean;
   onUnlink: () => void;
   onTogglePrivacy: (isPublic: boolean) => void;
   onGoToSearch?: () => void;
+  onRegister: () => void;
 }
 
 export default function TierColumn({
-  gameType, entry, searchData, isChzzkConnected, onUnlink, onTogglePrivacy, onGoToSearch,
+  gameType, entry, searchData, isChzzkConnected, isVerifiedSearch,
+  onUnlink, onTogglePrivacy, onGoToSearch, onRegister,
 }: Props) {
   const display = entry ?? searchData ?? null;
   const isRegistered = !!entry;
@@ -25,11 +28,7 @@ export default function TierColumn({
         <span className="riot-split-title">{label}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {isRegistered && (
-            <span
-              title={entry!.isVerified ? '인증된 계정' : '미인증 계정 — 클릭하여 인증'}
-              style={{ cursor: entry!.isVerified ? 'default' : 'pointer', fontSize: 12 }}
-              onClick={!entry!.isVerified ? onGoToSearch : undefined}
-            >
+            <span style={{ fontSize: 12 }}>
               {entry!.isVerified ? '✓' : '⚠'}
             </span>
           )}
@@ -80,11 +79,12 @@ export default function TierColumn({
           <button
             type="button"
             className="btn-riot-register"
-            disabled
+            disabled={!isVerifiedSearch || !isChzzkConnected}
+            onClick={onRegister}
           >
             Register
           </button>
-          {hasSearchData && isChzzkConnected && (
+          {hasSearchData && isChzzkConnected && !isVerifiedSearch && (
             <span
               onClick={onGoToSearch}
               style={{

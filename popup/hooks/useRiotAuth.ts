@@ -49,11 +49,13 @@ export function useRiotAuth(auth: ChzzkAuth | null) {
   const register = async (gameType: GameType) => {
     if (!auth?.channelId) return;
     const storageKey = gameType === 'lol' ? 'summonerData' : 'tftData';
+    const verKey = `isVerified_${gameType}`;
     const result = await new Promise<any>((resolve) =>
-      chrome.storage.local.get([storageKey], resolve)
+      chrome.storage.local.get([storageKey, verKey], resolve)
     );
     const data = result[storageKey];
     if (!data?.puuid) throw new Error('No search data');
+    const isVerified = !!result[verKey];
 
     const entry = {
       riotPuuid: data.puuid,
@@ -66,6 +68,7 @@ export function useRiotAuth(auth: ChzzkAuth | null) {
       losses: 0,
       gameName: data.gameName ?? null,
       tagLine: data.tagLine ?? null,
+      isVerified,
     };
 
     const liveId = await getLiveId();
@@ -79,6 +82,7 @@ export function useRiotAuth(auth: ChzzkAuth | null) {
       rank: data.rank ?? null,
       lp: data.lp ?? 0,
       isPublic: true,
+      isVerified,
       gameType,
     };
     if (gameType === 'lol') setLolEntry(newEntry);

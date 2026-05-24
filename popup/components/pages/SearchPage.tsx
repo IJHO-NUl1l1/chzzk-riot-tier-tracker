@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SearchResult from '../SearchResult';
 import VerifyCard from '../VerifyCard';
 import { useSearch } from '../../hooks/useSearch';
-import { useVerify } from '../../hooks/useVerify';
+import { useVerify, verifiedKey } from '../../hooks/useVerify';
 import { useChzzkAuth } from '../../hooks/useChzzkAuth';
 import { useRiotAuth } from '../../hooks/useRiotAuth';
 import config from '../../../js/config.js';
@@ -24,42 +24,41 @@ interface GameSearchProps {
 
 function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
   const { auth } = useChzzkAuth();
-  const { register } = useRiotAuth(auth);
   const { result, loading, error, search } = useSearch(gameType);
-  const { state, iconId, error: verifyError, start, confirm, reset } = useVerify(auth?.channelId);
+  const { state, iconId, error: verifyError, start, confirm, reset } = useVerify(auth?.channelId, gameType);
 
   const [gameName, setGameName] = useState('');
   const [tagLine, setTagLine] = useState('');
   const [region, setRegion] = useState(config.getSetting('region', 'kr'));
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     const storageKey = gameType === 'lol' ? 'summonerData' : 'tftData';
-    chrome.storage.local.get([storageKey], (r) => {
+    chrome.storage.local.get([storageKey, verifiedKey(gameType)], (r) => {
       const d = r[storageKey];
       if (d) {
         setGameName(d.gameName ?? '');
         setTagLine(d.tagLine ?? '');
         if (d.region) setRegion(d.region);
       }
+      setIsVerified(!!r[verifiedKey(gameType)]);
     });
   }, [gameType]);
 
-  const [registering, setRegistering] = useState(false);
-
-  const handleRegister = async () => {
-    setRegistering(true);
-    try {
-      await register(gameType);
+  // 인증 완료 시 Home으로 이동
+  useEffect(() => {
+    if (state === 'done') {
+      setIsVerified(true);
       onVerifyDone();
-    } catch (e) {
-      console.error(e);
     }
-    setRegistering(false);
-  };
+  }, [state]);
 
   const handleSearch = () => {
     if (!gameName.trim() || !tagLine.trim()) return;
     reset();
+    // 새 검색 시 인증 상태 초기화
+    setIsVerified(false);
+    chrome.storage.local.remove(verifiedKey(gameType));
     search(gameName.trim(), tagLine.trim(), region);
   };
 
@@ -114,28 +113,23 @@ function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
       <SearchResult gameType={gameType} data={result} />
 
       {result && auth?.channelId && (
-        <VerifyCard
-          gameType={gameType}
-          puuid={result.puuid}
-          region={region}
-          state={state}
-          iconId={iconId}
-          error={verifyError}
-          onStart={() => start(result.puuid, gameType, region)}
-          onConfirm={() => confirm(result.puuid, gameType, region)}
-          onCancel={reset}
-        />
-      )}
-      {result && (
-        <button
-          type="button"
-          className="btn-riot-register"
-          onClick={handleRegister}
-          disabled={state !== 'done' || registering}
-          style={{ marginTop: 8, width: '100%' }}
-        >
-          {registering ? '등록 중...' : 'Register'}
-        </button>
+        isVerified ? (
+          <div className="status-message success" style={{ textAlign: 'center', marginTop: 8 }}>
+            ✓ 인증 완료
+          </div>
+        ) : (
+          <VerifyCard
+            gameType={gameType}
+            puuid={result.puuid}
+            region={region}
+            state={state}
+            iconId={iconId}
+            error={verifyError}
+            onStart={() => start(result.puuid, region)}
+            onConfirm={() => confirm(result.puuid, region)}
+            onCancel={reset}
+          />
+        )
       )}
     </>
   );
