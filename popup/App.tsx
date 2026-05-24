@@ -14,8 +14,8 @@ export default function App() {
       <main id="app">
         <h1>Riot Tier Tracker</h1>
         <section className="page active">
-          {page === 'home' && <HomePage />}
-          {page === 'search' && <SearchPage />}
+          {page === 'home' && <HomePage onGoToSearch={() => setPage('search')} />}
+          {page === 'search' && <SearchPage onVerifyDone={() => setPage('home')} />}
           {page === 'settings' && <SettingsPage />}
         </section>
       </main>

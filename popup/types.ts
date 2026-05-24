@@ -14,6 +14,7 @@ export interface TierEntry {
   rank: string | null;
   lp: number;
   isPublic: boolean;
+  isVerified: boolean;
   gameType: GameType;
 }
 

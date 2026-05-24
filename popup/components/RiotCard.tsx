@@ -13,11 +13,12 @@ interface Props {
   onUnlink: (gameType: GameType) => Promise<void>;
   onTogglePrivacy: (gameType: GameType, isPublic: boolean) => Promise<void>;
   onLogout: () => Promise<void>;
+  onGoToSearch?: () => void;
 }
 
 export default function RiotCard({
   auth, lolEntry, tftEntry, lolSearchData, tftSearchData,
-  loading, onRegister, onUnlink, onTogglePrivacy, onLogout,
+  loading, onRegister, onUnlink, onTogglePrivacy, onLogout, onGoToSearch,
 }: Props) {
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState<GameType | null>(null);
@@ -82,13 +83,21 @@ export default function RiotCard({
           <span className="auth-label">Riot Account <span className="badge-beta">BETA</span></span>
           <span className="auth-sublabel">Not connected</span>
         </div>
-        <button type="button" className="btn-auth btn-auth--riot" disabled>
+        <button type="button" className="btn-auth btn-auth--riot" disabled style={{ opacity: 0.4, cursor: 'not-allowed' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
             <polyline points="10 17 15 12 10 7" />
             <line x1="15" y1="12" x2="3" y2="12" />
           </svg>
-          Search로 계정 연결
+          Riot으로 로그인
+          <span style={{ marginLeft: 6, fontSize: 10, opacity: 0.7 }}>Coming Soon</span>
+        </button>
+        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', margin: '4px 0' }}>또는</div>
+        <button type="button" className="btn-auth btn-auth--riot" onClick={onGoToSearch} disabled={!isChzzkConnected}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          소환사 검색으로 연결
         </button>
       </div>
     );
@@ -112,6 +121,7 @@ export default function RiotCard({
           onRegister={() => handleRegister('lol')}
           onUnlink={() => handleUnlink('lol')}
           onTogglePrivacy={(v) => onTogglePrivacy('lol', v)}
+          onGoToSearch={onGoToSearch}
         />
         <div className="riot-split-divider" />
         <TierColumn
@@ -122,6 +132,7 @@ export default function RiotCard({
           onRegister={() => handleRegister('tft')}
           onUnlink={() => handleUnlink('tft')}
           onTogglePrivacy={(v) => onTogglePrivacy('tft', v)}
+          onGoToSearch={onGoToSearch}
         />
       </div>
       <button

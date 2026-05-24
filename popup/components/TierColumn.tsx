@@ -10,10 +10,11 @@ interface Props {
   onRegister: () => void;
   onUnlink: () => void;
   onTogglePrivacy: (isPublic: boolean) => void;
+  onGoToSearch?: () => void;
 }
 
 export default function TierColumn({
-  gameType, entry, searchData, isChzzkConnected, onRegister, onUnlink, onTogglePrivacy,
+  gameType, entry, searchData, isChzzkConnected, onRegister, onUnlink, onTogglePrivacy, onGoToSearch,
 }: Props) {
   const display = entry ?? searchData ?? null;
   const isRegistered = !!entry;
@@ -23,16 +24,27 @@ export default function TierColumn({
     <div className="riot-split-col">
       <div className="riot-split-col-header">
         <span className="riot-split-title">{label}</span>
-        {isRegistered && (
-          <label className="toggle toggle--sm" title="공개/비공개">
-            <input
-              type="checkbox"
-              checked={entry!.isPublic}
-              onChange={(e) => onTogglePrivacy(e.target.checked)}
-            />
-            <span className="toggle-slider" />
-          </label>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {isRegistered && (
+            <span
+              title={entry!.isVerified ? '인증된 계정' : '미인증 계정 — 클릭하여 인증'}
+              style={{ cursor: entry!.isVerified ? 'default' : 'pointer', fontSize: 12 }}
+              onClick={!entry!.isVerified ? onGoToSearch : undefined}
+            >
+              {entry!.isVerified ? '✓' : '⚠'}
+            </span>
+          )}
+          {isRegistered && (
+            <label className="toggle toggle--sm" title="공개/비공개">
+              <input
+                type="checkbox"
+                checked={entry!.isPublic}
+                onChange={(e) => onTogglePrivacy(e.target.checked)}
+              />
+              <span className="toggle-slider" />
+            </label>
+          )}
+        </div>
       </div>
 
       {display?.tier ? (

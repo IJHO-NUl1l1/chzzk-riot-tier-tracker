@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import SearchResult from '../SearchResult';
+import VerifyCard from '../VerifyCard';
 import { useSearch } from '../../hooks/useSearch';
+import { useVerify } from '../../hooks/useVerify';
+import { useChzzkAuth } from '../../hooks/useChzzkAuth';
+import { useRiotAuth } from '../../hooks/useRiotAuth';
 import config from '../../../js/config.js';
 import type { GameType } from '../../types';
 
@@ -13,8 +17,17 @@ const REGIONS = [
   { value: 'br', label: 'Brazil (BR)' },
 ];
 
-function GameSearch({ gameType }: { gameType: GameType }) {
+interface GameSearchProps {
+  gameType: GameType;
+  onVerifyDone: () => void;
+}
+
+function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
+  const { auth } = useChzzkAuth();
+  const { register } = useRiotAuth(auth);
   const { result, loading, error, search } = useSearch(gameType);
+  const { state, iconId, error: verifyError, start, confirm, reset } = useVerify(auth?.channelId);
+
   const [gameName, setGameName] = useState('');
   const [tagLine, setTagLine] = useState('');
   const [region, setRegion] = useState(config.getSetting('region', 'kr'));
@@ -31,8 +44,16 @@ function GameSearch({ gameType }: { gameType: GameType }) {
     });
   }, [gameType]);
 
+  // 인증 완료 시 자동 등록
+  useEffect(() => {
+    if (state === 'done') {
+      register(gameType).then(() => onVerifyDone()).catch(console.error);
+    }
+  }, [state]);
+
   const handleSearch = () => {
     if (!gameName.trim() || !tagLine.trim()) return;
+    reset();
     search(gameName.trim(), tagLine.trim(), region);
   };
 
@@ -76,17 +97,34 @@ function GameSearch({ gameType }: { gameType: GameType }) {
             {loading ? 'Searching...' : 'Search'}
           </button>
           {error && <div className="status-message error">{error}</div>}
-          {result && !error && <div className="status-message success">
-            {isLol ? 'Summoner found!' : 'TFT info found!'}
-          </div>}
+          {result && !error && (
+            <div className="status-message success">
+              {isLol ? 'Summoner found!' : 'TFT info found!'}
+            </div>
+          )}
         </div>
       </div>
+
       <SearchResult gameType={gameType} data={result} />
+
+      {result && auth?.channelId && (
+        <VerifyCard
+          gameType={gameType}
+          puuid={result.puuid}
+          region={region}
+          state={state}
+          iconId={iconId}
+          error={verifyError}
+          onStart={() => start(result.puuid, gameType, region)}
+          onConfirm={() => confirm(result.puuid, gameType, region)}
+          onCancel={reset}
+        />
+      )}
     </>
   );
 }
 
-export default function SearchPage() {
+export default function SearchPage({ onVerifyDone }: { onVerifyDone: () => void }) {
   const [tab, setTab] = useState<GameType>('lol');
 
   return (
@@ -106,10 +144,10 @@ export default function SearchPage() {
         ))}
       </div>
       <div className={`tab-content${tab === 'lol' ? ' active' : ''}`}>
-        {tab === 'lol' && <GameSearch gameType="lol" />}
+        {tab === 'lol' && <GameSearch gameType="lol" onVerifyDone={onVerifyDone} />}
       </div>
       <div className={`tab-content${tab === 'tft' ? ' active' : ''}`}>
-        {tab === 'tft' && <GameSearch gameType="tft" />}
+        {tab === 'tft' && <GameSearch gameType="tft" onVerifyDone={onVerifyDone} />}
       </div>
     </>
   );

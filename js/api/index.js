@@ -2,6 +2,7 @@ import summonerApi from './summoner.js';
 import rankApi from './rank.js';
 import tftApi from './tft.js';
 import chzzkApi from './chzzk.js';
+import verifyApi from './verify.js';
 
 const api = {
   summoner: summonerApi,
@@ -17,7 +18,8 @@ const api = {
     getActiveGame: rankApi.getActiveGame
   },
   tft: tftApi,
-  chzzk: chzzkApi
+  chzzk: chzzkApi,
+  verify: verifyApi
 };
 
 export default api;

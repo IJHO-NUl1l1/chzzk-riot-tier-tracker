@@ -4,7 +4,10 @@ import RiotCard from '../RiotCard';
 import { useChzzkAuth } from '../../hooks/useChzzkAuth';
 import { useRiotAuth } from '../../hooks/useRiotAuth';
 
-export default function HomePage() {
+// onGoToSearch는 App.tsx에서 주입
+
+
+export default function HomePage({ onGoToSearch }: { onGoToSearch?: () => void }) {
   const { auth, login, logout } = useChzzkAuth();
   const { lolEntry, tftEntry, loading, register, unlink, togglePrivacy, logout: riotLogout } = useRiotAuth(auth);
 
@@ -39,6 +42,7 @@ export default function HomePage() {
         onUnlink={unlink}
         onTogglePrivacy={togglePrivacy}
         onLogout={riotLogout}
+        onGoToSearch={onGoToSearch}
       />
     </>
   );

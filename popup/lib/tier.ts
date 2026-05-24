@@ -10,6 +10,7 @@ export function dbEntryToData(entry: any): TierEntry | null {
     rank: entry.rank ?? null,
     lp: entry.league_points ?? 0,
     isPublic: entry.is_public ?? true,
+    isVerified: entry.is_verified ?? false,
     gameType: entry.game_type,
   };
 }
