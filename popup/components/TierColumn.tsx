@@ -28,11 +28,6 @@ export default function TierColumn({
         <span className="riot-split-title">{label}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {isRegistered && (
-            <span style={{ fontSize: 12 }}>
-              {entry!.isVerified ? '✓' : '⚠'}
-            </span>
-          )}
-          {isRegistered && (
             <label className="toggle toggle--sm" title="공개/비공개">
               <input
                 type="checkbox"
