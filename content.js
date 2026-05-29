@@ -11,6 +11,19 @@
   const RECONNECT_DELAY = 3000;
   const PROCESSED_ATTR = 'data-crtt-processed';
 
+  const TIER_GRADIENTS = {
+    CHALLENGER:  ['#f4c873', '#ffffff'],
+    GRANDMASTER: ['#ef4444', '#f97316'],
+    MASTER:      ['#9d4dc3', '#ec4899'],
+    DIAMOND:     ['#60a5fa', '#a5f3fc'],
+    EMERALD:     ['#10b981', '#0ac3a6'],
+    PLATINUM:    ['#00b4d8', '#90e0ef'],
+    GOLD:        ['#c89b3c', '#f4c873'],
+    SILVER:      ['#6b7280', '#d1d5db'],
+    BRONZE:      ['#a16207', '#d97706'],
+    IRON:        ['#4b5563', '#9ca3af'],
+  };
+
   const TIER_COLORS = {
     IRON: '#72767d',
     BRONZE: '#b97451',
@@ -247,39 +260,46 @@
       ? chrome.runtime.getURL(`images/RankedEmblemsLatest/Rank=${tierImgName}.png`)
       : '';
     const gameKey = entry.game_type === 'lol' ? 'lol' : 'tft';
-    const gameLabel = entry.game_type === 'lol' ? 'LoL' : 'TFT';
+    const gameLabel = entry.game_type === 'lol' ? 'LOL' : 'TFT';
+    const gameIconUrl = chrome.runtime.getURL(`images/${gameKey}-icon.svg`);
     const lp = entry.league_points;
     const tierColor = TIER_COLORS[tierUpper] || '#e4e4e7';
-    const nameText = entry.riot_game_name ? `${escapeHtml(entry.riot_game_name)}#${escapeHtml(entry.riot_tag_line || '')}` : '';
+    const gradientPair = TIER_GRADIENTS[tierUpper] || [tierColor, '#ffffff'];
+    const gradient = `linear-gradient(135deg, ${gradientPair[0]} 0%, ${gradientPair[1]} 100%)`;
 
     const lpHtml = lp != null
-      ? `<div class="crtt-tooltip-lp-prestige">${lp} <span style="font-weight:500;color:#52525b;font-size:10px">LP</span></div>`
+      ? `<div class="crtt-tooltip-lp-prestige">${lp} <span style="font-weight:500;color:#52525b;font-size:9px">LP</span></div>`
       : '';
 
     tooltipEl.innerHTML = `
-      <div class="crtt-tooltip-header">
+      <div class="crtt-tt-emblem">
         ${tierImgUrl ? `<img class="crtt-tooltip-tier-img" src="${tierImgUrl}" alt="${escapeHtml(tierName)}">` : ''}
-        <div class="crtt-tooltip-info">
-          <div class="crtt-tooltip-game crtt-tooltip-game--${gameKey}">${escapeHtml(gameLabel)}</div>
-          <div class="crtt-tooltip-tier-text" style="color:${tierColor};text-shadow:0 0 12px ${tierColor}55">${escapeHtml(tierName)}</div>
-        </div>
       </div>
-      ${lpHtml}
-      ${nameText ? `<div class="crtt-tooltip-name">${nameText}</div>` : ''}
+      <div class="crtt-tt-info">
+        <div class="crtt-tt-info-top">
+          <div class="crtt-tooltip-game crtt-tooltip-game--${gameKey}">
+            <img class="crtt-tooltip-game-icon" src="${gameIconUrl}" alt="${escapeHtml(gameLabel)}" />
+            <span>${escapeHtml(gameLabel)}</span>
+          </div>
+          <div class="crtt-tooltip-tier-text"><span style="display:inline-block;-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;background-image:${gradient}">${escapeHtml(tierName)}</span></div>
+        </div>
+        ${lpHtml}
+      </div>
     `;
 
-    tooltipEl.style.borderLeftColor = tierColor + '55';
+    tooltipEl.style.borderLeftColor = gradientPair[0] + '88';
 
+    const TOOLTIP_W = 210;
+    const TOOLTIP_H = 85;
     const rect = badgeEl.getBoundingClientRect();
     let left = rect.left;
     let top = rect.bottom + 6;
 
-    const tooltipWidth = 248;
-    if (left + tooltipWidth > window.innerWidth) {
-      left = window.innerWidth - tooltipWidth - 8;
+    if (left + TOOLTIP_W > window.innerWidth) {
+      left = window.innerWidth - TOOLTIP_W - 8;
     }
-    if (top + 110 > window.innerHeight) {
-      top = rect.top - 8 - 110;
+    if (top + TOOLTIP_H > window.innerHeight) {
+      top = rect.top - 8 - TOOLTIP_H;
     }
 
     tooltipEl.style.left = `${left}px`;

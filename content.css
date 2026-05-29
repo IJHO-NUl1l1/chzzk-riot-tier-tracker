@@ -29,13 +29,15 @@
 .crtt-tooltip {
   position: fixed;
   z-index: 99999;
+  display: flex;
+  align-items: stretch;
+  width: 210px;
+  height: 85px;
   background: linear-gradient(155deg, #0f0f1c 0%, #09090f 100%);
   border: 1px solid rgba(129, 140, 248, 0.22);
   border-left-width: 3px;
   border-radius: 12px;
-  padding: 12px 14px 11px 12px;
-  min-width: 192px;
-  max-width: 256px;
+  padding: 11px 12px 11px 11px;
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.75),
     0 0 0 1px rgba(129, 140, 248, 0.06),
@@ -62,37 +64,56 @@
   transform: translateY(0) scale(1);
 }
 
-.crtt-tooltip-header {
+/* 왼쪽: 뱃지 이미지 상하좌우 중앙 */
+.crtt-tt-emblem {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  padding-right: 11px;
+  flex-shrink: 0;
 }
 
 .crtt-tooltip-tier-img {
-  width: 42px;
-  height: 42px;
+  width: 47px;
+  height: 47px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
 }
 
-.crtt-tooltip-info {
+/* 오른쪽: 상단(게임태그+티어) / 하단(LP) 두 그룹 */
+.crtt-tt-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+  align-items: flex-start;
   flex: 1;
+  min-width: 0;
+  gap: 12px;
+}
+
+.crtt-tt-info-top {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .crtt-tooltip-game {
   display: inline-flex;
   align-items: center;
+  gap: 2px;
   width: fit-content;
-  padding: 1px 7px;
+  padding: 1px 3px 1px 2px;
   border-radius: 999px;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+
+.crtt-tooltip-game-icon {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .crtt-tooltip-game--lol {
@@ -101,43 +122,38 @@
   color: #a5b4fc;
 }
 
+/* lol-icon 은 원본이 작아서 더 크게 + #a5b4fc tint */
+.crtt-tooltip-game--lol .crtt-tooltip-game-icon {
+  width: 8px;
+  height: 8px;
+  filter: brightness(0) saturate(100%) invert(74%) sepia(30%) saturate(700%) hue-rotate(200deg) brightness(115%);
+}
+
 .crtt-tooltip-game--tft {
   background: rgba(52, 211, 153, 0.14);
   border: 1px solid rgba(52, 211, 153, 0.3);
   color: #6ee7b7;
 }
 
+/* tft-icon.svg 를 #6ee7b7 색상으로 tint */
+.crtt-tooltip-game--tft .crtt-tooltip-game-icon {
+  filter: brightness(0) saturate(100%) invert(83%) sepia(25%) saturate(600%) hue-rotate(110deg) brightness(105%);
+}
+
+/* 티어 텍스트 — 그라디언트는 JS에서 span에 inline style로 적용 */
 .crtt-tooltip-tier-text {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
-  letter-spacing: 0.02em;
-}
-
-.crtt-tooltip-lp-prestige {
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #a1a1aa;
-  letter-spacing: 0.02em;
-}
-
-.crtt-tooltip-name {
-  margin-top: 8px;
-  padding-top: 8px;
-  position: relative;
-  font-size: 11px;
-  color: #52525b;
+  letter-spacing: 0;
+  text-transform: uppercase;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.crtt-tooltip-name::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.05) 100%);
+/* LP */
+.crtt-tooltip-lp-prestige {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e4e4e7;
+  letter-spacing: 0.01em;
 }
-
