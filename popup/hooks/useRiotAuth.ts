@@ -57,6 +57,11 @@ export function useRiotAuth(auth: ChzzkAuth | null) {
     if (!data?.puuid) throw new Error('No search data');
     const isVerified = !!result[verKey];
 
+    // 갱신 시 사용할 region 저장
+    if (data.region) {
+      chrome.storage.local.set({ [`region_${gameType}`]: data.region });
+    }
+
     const entry = {
       riotPuuid: data.puuid,
       gameType,
@@ -109,16 +114,74 @@ export function useRiotAuth(auth: ChzzkAuth | null) {
     else setTftEntry((prev) => prev ? { ...prev, isPublic } : prev);
   };
 
+  const refreshTier = async (gameType: GameType): Promise<{ changed: boolean } | null> => {
+    if (!auth?.channelId) return null;
+
+    const entry = gameType === 'lol' ? lolEntry : tftEntry;
+    if (!entry) return null;
+
+    // 쿨타임 체크 (5분)
+    const cooldownKey = `lastRefresh_${gameType}`;
+    const stored = await new Promise<any>((resolve) =>
+      chrome.storage.local.get([cooldownKey, `region_${gameType}`], resolve)
+    );
+    const lastRefresh = stored[cooldownKey] ?? 0;
+    if (Date.now() - lastRefresh < 5 * 60 * 1000) {
+      const remaining = Math.ceil((5 * 60 * 1000 - (Date.now() - lastRefresh)) / 1000);
+      throw new Error(`COOLDOWN:${remaining}`);
+    }
+
+    const region = stored[`region_${gameType}`] ?? 'kr';
+    const liveId = await getLiveId();
+
+    let result;
+    try {
+      result = await withAuth((headers) =>
+        api.chzzk.refreshTier(
+          auth.channelId,
+          gameType,
+          region,
+          entry.tier,
+          entry.rank,
+          entry.lp,
+          headers,
+          liveId
+        )
+      );
+    } catch (e: any) {
+      // 서버 429 — 클라이언트 쿨타임도 동기화
+      if (e?.message?.includes('Too many requests')) {
+        chrome.storage.local.set({ [cooldownKey]: Date.now() });
+        throw new Error('COOLDOWN:300');
+      }
+      throw e;
+    }
+
+    chrome.storage.local.set({ [cooldownKey]: Date.now() });
+
+    if (result.changed) {
+      const updated = { ...entry, tier: result.entry.tier, rank: result.entry.rank, lp: result.entry.lp };
+      if (gameType === 'lol') setLolEntry(updated);
+      else setTftEntry(updated);
+    }
+
+    return { changed: result.changed };
+  };
+
   const logout = async () => {
     if (!auth?.channelId) return;
     const liveId = await getLiveId();
     await withAuth((headers) =>
       api.chzzk.deleteTierCache(auth.channelId, undefined, headers, liveId)
     );
-    chrome.storage.local.remove(['summonerData', 'tftData']);
+    chrome.storage.local.remove([
+      'summonerData', 'tftData',
+      'region_lol', 'region_tft',
+      'lastRefresh_lol', 'lastRefresh_tft',
+    ]);
     setLolEntry(null);
     setTftEntry(null);
   };
 
-  return { lolEntry, tftEntry, loading, register, unlink, togglePrivacy, logout };
+  return { lolEntry, tftEntry, loading, register, unlink, togglePrivacy, refreshTier, logout };
 }

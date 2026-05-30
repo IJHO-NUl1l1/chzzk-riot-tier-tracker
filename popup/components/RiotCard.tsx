@@ -14,13 +14,14 @@ interface Props {
   onRegister: (gameType: GameType) => Promise<void>;
   onUnlink: (gameType: GameType) => Promise<void>;
   onTogglePrivacy: (gameType: GameType, isPublic: boolean) => Promise<void>;
+  onRefresh: (gameType: GameType) => Promise<{ changed: boolean } | null>;
   onLogout: () => Promise<void>;
   onGoToSearch?: () => void;
 }
 
 export default function RiotCard({
   auth, lolEntry, tftEntry, lolSearchData, tftSearchData,
-  lolVerified, tftVerified, loading, onRegister, onUnlink, onTogglePrivacy, onLogout, onGoToSearch,
+  lolVerified, tftVerified, loading, onRegister, onUnlink, onTogglePrivacy, onRefresh, onLogout, onGoToSearch,
 }: Props) {
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState<GameType | null>(null);
@@ -124,6 +125,7 @@ export default function RiotCard({
           onRegister={() => handleRegister('lol')}
           onUnlink={() => handleUnlink('lol')}
           onTogglePrivacy={(v) => onTogglePrivacy('lol', v)}
+          onRefresh={() => onRefresh('lol')}
           onGoToSearch={onGoToSearch}
         />
         <div className="riot-split-divider" />
@@ -136,6 +138,7 @@ export default function RiotCard({
           onRegister={() => handleRegister('tft')}
           onUnlink={() => handleUnlink('tft')}
           onTogglePrivacy={(v) => onTogglePrivacy('tft', v)}
+          onRefresh={() => onRefresh('tft')}
           onGoToSearch={onGoToSearch}
         />
       </div>

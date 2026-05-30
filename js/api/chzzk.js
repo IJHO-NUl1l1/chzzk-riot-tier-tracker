@@ -31,7 +31,13 @@ const chzzkApi = {
     if (gameType) body.gameType = gameType;
     if (liveId) body.liveId = liveId;
     return proxyClient.post('/privacy/update', body, { headers });
-  }
+  },
+
+  async refreshTier(chzzkChannelId, gameType, region, currentTier, currentRank, currentLP, headers = {}, liveId = null) {
+    const body = { chzzkChannelId, gameType, region, currentTier, currentRank, currentLP };
+    if (liveId) body.liveId = liveId;
+    return proxyClient.post('/chzzk/tier-refresh', body, { headers });
+  },
 };
 
 export default chzzkApi;

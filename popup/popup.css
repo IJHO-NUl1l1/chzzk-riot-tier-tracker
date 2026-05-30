@@ -1293,3 +1293,7 @@ button:focus-visible,
     transition-duration: 0.01ms !important;
   }
 }
+
+@keyframes crtt-spin {
+  to { transform: rotate(360deg); }
+}
