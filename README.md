@@ -329,9 +329,6 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 2. URL 입력
 
 ```
-# 시청자 티어 배지 + 닉네임 목록
-https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
-
 # 티어 분포 통계 바차트
 https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=stats
 ```
@@ -381,6 +378,6 @@ git clone https://github.com/IJHO-NUl1l1/chzzk-lol-tier.git
 
 | 역할 | 링크 |
 |------|------|
-| Chrome Extension | https://github.com/IJHO-NUl1l1/chzzk-lol-tier |
+| Chrome Extension | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker | (current repo)
 | Fastify 서버 | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-fastify |
-| Web | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web |
+| Onboarding Web | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web |
