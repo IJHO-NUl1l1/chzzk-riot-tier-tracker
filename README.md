@@ -135,33 +135,33 @@ URL: https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Chrome Extension                          │
+│                    Chrome Extension                         │
 │                                                             │
 │  content.js ──── MutationObserver ──── 채팅 배지 삽입        │
 │      │                                                      │
 │      └──── Supabase Realtime 구독 (tier_updates:{liveId})   │
 │                                                             │
-│  popup.js ──── 치지직 / Riot 연동, 등록/삭제/공개설정 토글   │
+│  popup.js ──── 치지직 / Riot 연동, 등록/삭제/공개설정 토글     │
 │      │                                                      │
-│      └──── chrome.storage.local (JWT, 연동 정보)            │
+│      └──── chrome.storage.local (JWT, 연동 정보)             │
 │                                                             │
-│  background.js ──── OAuth 탭 관리, JWT 캡처 및 저장          │
+│  background.js ──── OAuth 탭 관리, JWT 캡처 및 저장           │
 └───────────────────────────┬─────────────────────────────────┘
                             │ HTTPS
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Fastify 서버 (Railway, 상시 구동)               │
 │                                                             │
-│  GET  /api/tier             ── 닉네임 기반 티어 조회         │
+│  GET  /api/tier             ── 닉네임 기반 티어 조회          │
 │  POST /api/chzzk/tier-cache ── 티어 등록 (JWT 인증)          │
 │  DEL  /api/chzzk/tier-cache ── 티어 삭제 (JWT 인증)          │
-│  POST /api/privacy/update   ── 공개설정 변경 (JWT 인증)       │
+│  POST /api/privacy/update   ── 공개설정 변경 (JWT 인증)      │
 │  GET  /api/chzzk/auth       ── 치지직 OAuth 시작             │
 │  GET  /api/riot/...         ── Riot API 프록시 (LRU 캐시)    │
 │                                                             │
 │  lib/auth.ts       ── requireSelf() JWT 미들웨어             │
-│  lib/tier-store.ts ── 서버 LRU 캐시 (500개, 5분 TTL)        │
-│  lib/realtime.ts   ── broadcastToChannel() 헬퍼              │
+│  lib/tier-store.ts ── 서버 LRU 캐시 (500개, 5분 TTL)         │
+│  lib/realtime.ts   ── broadcastToChannel() 헬퍼             │
 └───────────────────────────┬─────────────────────────────────┘
                             │
                             ▼
@@ -170,22 +170,21 @@ URL: https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
 │                                                             │
 │  PostgreSQL DB                                              │
 │  ├── users          ── 치지직 계정 정보                      │
-│  ├── chzzk_tokens   ── 치지직 OAuth 토큰                    │
+│  ├── chzzk_tokens   ── 치지직 OAuth 토큰                     │
 │  ├── riot_tokens    ── Riot RSO 토큰 (구현 예정)             │
-│  └── tier_cache     ── LoL / TFT 티어 데이터                │
+│  └── tier_cache     ── LoL / TFT 티어 데이터                 │
 │                                                             │
 │  Realtime Broadcast ── tier_updates:{liveId} 채널           │
-│  Realtime Presence  ── 시청자 추적 (OBS 오버레이용)          │
+│  Realtime Presence  ── 시청자 추적 (OBS 오버레이용)           │
 │  RLS                ── anon key 직접 쓰기 차단               │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ▼
+└─────────────────────────────────────────────────────────────┘
+                      
 ┌─────────────────────────────────────────────────────────────┐
 │              Web / Next.js (Vercel)                         │
 │                                                             │
 │  /                 ── 랜딩 페이지                            │
-│  /demo             ── 인터랙티브 5단계 데모                  │
-│  /overlay/[liveId] ── OBS Browser Source 오버레이           │
+│  /demo             ── 인터랙티브 데모                        │
+│  /overlay/[liveId] ── OBS Browser Source 오버레이            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
