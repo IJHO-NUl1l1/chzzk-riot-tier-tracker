@@ -12,13 +12,11 @@
 
 ## 관련 레포지토리
 
-| 역할 | 레포지토리 | 배포 |
-|------|-----------|------|
-| Chrome Extension | [chzzk-lol-tier-tracker](https://github.com/IJHO-NUl1l1/chzzk-lol-tier) | Chrome 개발자 모드 |
-| Fastify 서버 | [chzzk-riot-tier-tracker-fastify](https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-fastify) | Railway |
-| Web (랜딩 + OBS 오버레이) | [chzzk-riot-tier-tracker-web](https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web) | Vercel |
-
-**온보딩 웹**: https://chzzk-riot-tier-tracker-web.vercel.app
+| 역할 | 링크 |
+|------|------|
+| Chrome Extension | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker | (current repo)
+| Fastify 서버 | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-fastify |
+| Onboarding Web | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web |
 
 ---
 
@@ -373,11 +371,3 @@ git clone https://github.com/IJHO-NUl1l1/chzzk-lol-tier.git
 | **배포** | Railway (서버), Vercel (웹) |
 
 ---
-
-## 레포지토리
-
-| 역할 | 링크 |
-|------|------|
-| Chrome Extension | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker | (current repo)
-| Fastify 서버 | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-fastify |
-| Onboarding Web | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web |
