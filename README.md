@@ -340,20 +340,9 @@ https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=stats
 
 ## 설치 방법
 
-현재 Chrome 웹 스토어 출시 준비 중입니다. 개발자 모드로 직접 설치할 수 있습니다.
+Chrome 웹 스토어에서 다운 받으시면 됩니다!
 
-```bash
-# 1. 레포지토리 클론
-git clone https://github.com/IJHO-NUl1l1/chzzk-lol-tier.git
-
-# 2. Chrome 브라우저에서 chrome://extensions 접속
-
-# 3. 우측 상단 "개발자 모드" 활성화
-
-# 4. "압축 해제된 확장 프로그램을 로드합니다" 클릭
-
-# 5. 클론한 폴더 선택
-```
+https://chromewebstore.google.com/detail/chzzk-riot-tier-tracker/nblnplkaaiadgbagcmolcfbodpjfekgd
 
 ---
 
