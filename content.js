@@ -61,12 +61,11 @@
   // No rank suffix for Master+
   const NO_RANK_TIERS = new Set(['MASTER', 'GRANDMASTER', 'CHALLENGER']);
 
-  // DOM selectors (partial match for CSS module hashes)
+  // DOM selectors — matches semantic part of CSS module class names (hash-agnostic)
   const SEL = {
-    chatWrapper: '[class*="live_chatting_list_wrapper"]',
-    chatItem: '[class*="live_chatting_list_item"]',
-    usernameWrapper: '[class*="live_chatting_username_container"]',
-    nickname: '[class*="live_chatting_username_nickname"]',
+    chatItem: '[class*="chatting_message"]',
+    nicknameBtn: 'button[aria-haspopup]',
+    nicknameText: 'span[class*="nickname"]',
   };
 
   function isContextValid() {
@@ -147,10 +146,11 @@
   function processNewMessage(msgEl) {
     if (msgEl.hasAttribute(PROCESSED_ATTR)) return;
 
-    const nicknameEl = msgEl.querySelector(SEL.nickname);
-    if (!nicknameEl) return;
+    const nicknameBtn = msgEl.querySelector(SEL.nicknameBtn);
+    if (!nicknameBtn) return;
 
-    const nickname = nicknameEl.textContent.trim().replace(/:$/, '');
+    const nicknameTextEl = nicknameBtn.querySelector(SEL.nicknameText);
+    const nickname = (nicknameTextEl?.textContent || nicknameBtn.textContent).trim().replace(/:$/, '');
     if (!nickname) return;
 
     msgEl.setAttribute(PROCESSED_ATTR, '');
@@ -167,7 +167,7 @@
 
   function injectBadgesForNickname(nickname, entries) {
     if (!entries) return;
-    const escapedNick = CSS.escape(nickname);
+    const escapedNick = nickname.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     const messages = document.querySelectorAll(`[data-crtt-nick="${escapedNick}"]`);
     messages.forEach((msg) => {
       if (!msg.querySelector('.crtt-badge-wrapper')) {
@@ -180,11 +180,12 @@
     if (!isContextValid()) return;
     if (!entries || entries.length === 0) return;
 
-    const wrapperEl = msgEl.querySelector(SEL.usernameWrapper);
-    const nicknameEl = msgEl.querySelector(SEL.nickname);
-    if (!wrapperEl || !nicknameEl) return;
+    const nicknameBtn = msgEl.querySelector(SEL.nicknameBtn);
+    if (!nicknameBtn) return;
 
-    const targetParent = nicknameEl.parentNode;
+    const nicknameTextEl = nicknameBtn.querySelector(SEL.nicknameText);
+    const targetParent = nicknameTextEl ? nicknameTextEl.parentNode : nicknameBtn.parentNode;
+    const insertBefore = nicknameTextEl ?? nicknameBtn;
     if (!targetParent) return;
 
     const badgeContainer = document.createElement('span');
@@ -229,7 +230,7 @@
       const existing = targetParent.querySelector('.crtt-badge-wrapper');
       if (existing) existing.remove();
 
-      targetParent.insertBefore(badgeContainer, nicknameEl);
+      targetParent.insertBefore(badgeContainer, insertBefore);
     }
   }
 
@@ -337,7 +338,7 @@
   }
 
   function rerenderBadgesFromCache(nickname) {
-    const escapedNick = CSS.escape(nickname);
+    const escapedNick = nickname.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     document.querySelectorAll(`[data-crtt-nick="${escapedNick}"]`).forEach((msg) => {
       msg.querySelector('.crtt-badge-wrapper')?.remove();
       const cached = tierCache.get(nickname);
