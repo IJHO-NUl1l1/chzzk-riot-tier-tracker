@@ -11,7 +11,7 @@ export default function SettingsPage() {
         <div className="card-title">Settings</div>
         <div className="card-content">
           <div className="settings-item">
-            <span className="settings-label">LoL Badge 표시</span>
+            <span className="settings-label">LoL 배지 표시</span>
             <label className="toggle">
               <input
                 type="checkbox"
@@ -22,7 +22,7 @@ export default function SettingsPage() {
             </label>
           </div>
           <div className="settings-item">
-            <span className="settings-label">TFT Badge 표시</span>
+            <span className="settings-label">TFT 배지 표시</span>
             <label className="toggle">
               <input
                 type="checkbox"

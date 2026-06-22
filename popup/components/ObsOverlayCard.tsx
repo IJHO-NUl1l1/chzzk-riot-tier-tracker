@@ -34,12 +34,17 @@ function UrlRow({ label, url }: { label: string; url: string }) {
       </div>
       <div className="obs-url-input-row">
         <input className="obs-url-input" readOnly value={url} title={url} />
-        <button className="obs-copy-btn" onClick={copy} title="복사">
-          {copied
-            ? <CheckIcon />
-            : <img src={chrome.runtime.getURL('images/copy-icon.png')} alt="복사" width={14} height={14} style={{ filter: 'brightness(0) invert(1)' }} />
-          }
-        </button>
+        <div className="obs-copy-wrap">
+          <button className="obs-copy-btn" onClick={copy}>
+            {copied
+              ? <CheckIcon />
+              : <img src={chrome.runtime.getURL('images/copy-icon.png')} alt="복사" width={14} height={14} style={{ filter: 'brightness(0) invert(1)' }} />
+            }
+          </button>
+          <span className={`obs-copy-tooltip${copied ? ' copied' : ''}`}>
+            {copied ? 'Copied!' : 'Copy full OBS overlay URL'}
+          </span>
+        </div>
       </div>
     </div>
   );
