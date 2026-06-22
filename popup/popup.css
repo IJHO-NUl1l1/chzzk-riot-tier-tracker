@@ -1297,3 +1297,110 @@ button:focus-visible,
 @keyframes crtt-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ==================== OBS Overlay Card ==================== */
+
+.obs-no-channel {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.obs-tab-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.obs-tab {
+  flex: 1;
+  padding: 5px 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.obs-tab.active {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent-bright);
+}
+
+.obs-url-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.obs-url-row:last-child {
+  margin-bottom: 0;
+}
+
+.obs-url-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.obs-url-label {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  font-weight: 500;
+}
+
+
+.obs-url-input-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.obs-url-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 10px;
+  letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.obs-url-input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.obs-copy-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-hover);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  line-height: 1;
+}
+
+.obs-copy-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
