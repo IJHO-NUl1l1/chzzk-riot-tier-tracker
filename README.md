@@ -14,7 +14,7 @@
 
 | 역할 | 링크 |
 |------|------|
-| Chrome Extension | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker | (current repo)
+| Chrome Extension | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker (current repo) |
 | Fastify 서버 | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-fastify |
 | Onboarding Web | https://github.com/IJHO-NUl1l1/chzzk-riot-tier-tracker-web |
 
@@ -26,7 +26,7 @@
 
 익스텐션을 설치한 시청자가 자신의 치지직 계정과 Riot 계정을 연동하면, 해당 채널을 방문하는 모든 시청자의 화면에서 티어 배지가 표시됩니다. 팝업에서 등록·수정·공개설정을 변경하면 Supabase Realtime을 통해 채팅창에 즉시 반영됩니다.
 
-스트리머는 OBS Browser Source를 통해 현재 시청 중인 유저들의 티어 정보를 방송 화면에 오버레이로 표시할 수 있습니다.
+스트리머는 OBS Browser Source를 통해 세 가지 오버레이를 방송 화면에 표시할 수 있습니다.
 
 ---
 
@@ -37,7 +37,7 @@
 - **실시간 즉시 반영** — Supabase Realtime Broadcast로 등록·삭제·공개설정 변경이 채팅창에 즉시 동기화
 - **공개 / 비공개 설정** — 게임별(LoL / TFT)로 배지 공개 여부를 개별 제어
 - **JWT 인증** — 본인 데이터만 수정 가능하도록 서버 수준 인증 적용
-- **OBS Browser Source Overlay** — 시청자 티어 목록 / 티어 통계 차트를 방송 화면에 실시간 표시
+- **OBS Browser Source Overlay** — 시청자 티어 목록 / 티어 통계 / 치지직 채팅창을 방송 화면에 실시간 표시
 - **인터랙티브 온보딩 웹** — 설치 없이 핵심 기능을 체험할 수 있는 5단계 데모
 
 ---
@@ -117,17 +117,33 @@ Chrome 웹 스토어 또는 개발자 모드로 익스텐션을 설치합니다.
 
 ### 7. OBS 오버레이 (스트리머용)
 
+OBS Studio → 소스 추가 → 브라우저, 아래 URL 입력:
+
 ```
-OBS → 소스 추가 → 브라우저
-URL: https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
+# 시청자 티어 배지 + 닉네임 목록
+https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
+
+# 티어 분포 통계 바차트
+https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=stats
+
+# 치지직 채팅창 오버레이 (티어 배지 포함)
+https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=chat
 ```
 
-- `mode=list` — 시청자 티어 배지 + 닉네임 목록
-- `mode=stats` — 티어 분포 통계 바차트
-- Supabase Realtime Presence로 현재 시청자를 실시간 추적, 공개 설정된 유저만 표시
-- 시청자가 탭을 닫으면 WebSocket 연결 해제 → 자동 제거
+`{liveId}` = 현재 방송 URL `chzzk.naver.com/live/{liveId}`에서 복사
 
-> `liveId` = `chzzk.naver.com/live/{liveId}` URL의 고유 ID
+**mode=list / stats**
+- Supabase Realtime Presence로 현재 시청자를 실시간 추적
+- 익스텐션 설치 + 티어 공개 설정 유저만 표시
+- 시청자가 탭을 닫으면 자동 제거
+
+**mode=chat**
+- 치지직 WebSocket에 직접 연결하여 채팅 수신
+- 닉네임 색상: 치지직 원본과 동일하게 재현 (해시 팔레트 40색 / CC·CD·SG·SH·SS 코드)
+- 뱃지: 역할 뱃지(스트리머/매니저), 구독 뱃지, 시청자 뱃지, 티어 뱃지 순서로 표시
+- 채팅 내 커스텀 이모지 지원
+- Supabase Realtime으로 티어 변동 즉시 반영 (비공개 전환 시 뱃지 즉시 제거 포함)
+- 컨테이너 하단 고정 레이아웃 — OBS 브라우저 소스 크기 기준으로 아래에서 위로 쌓임
 
 ---
 
@@ -152,14 +168,16 @@ URL: https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
 ┌─────────────────────────────────────────────────────────────┐
 │              Fastify 서버 (Railway, 상시 구동)               │
 │                                                             │
-│  GET  /api/tier             ── 닉네임 기반 티어 조회          │
-│  POST /api/chzzk/tier-cache ── 티어 등록 (JWT 인증)          │
-│  DEL  /api/chzzk/tier-cache ── 티어 삭제 (JWT 인증)          │
-│  POST /api/privacy/update   ── 공개설정 변경 (JWT 인증)      │
-│  GET  /api/chzzk/auth       ── 치지직 OAuth 시작             │
-│  GET  /api/riot/...         ── Riot API 프록시 (LRU 캐시)    │
+│  GET  /api/tier                    ── 닉네임 기반 티어 조회  │
+│  POST /api/chzzk/tier-cache        ── 티어 등록 (JWT 인증)  │
+│  DEL  /api/chzzk/tier-cache        ── 티어 삭제 (JWT 인증)  │
+│  POST /api/privacy/update          ── 공개설정 변경          │
+│  GET  /api/chzzk/auth              ── 치지직 OAuth 시작      │
+│  GET  /api/chzzk/chat-channel      ── chatChannelId 조회    │
+│  GET  /api/chzzk/chat-token        ── WS 액세스 토큰 발급   │
+│  GET  /api/chzzk/nickname-color-codes ── 닉네임 색상 코드    │
+│  GET  /api/riot/...                ── Riot API 프록시        │
 │                                                             │
-│  lib/auth.ts       ── requireSelf() JWT 미들웨어             │
 │  lib/tier-store.ts ── 서버 LRU 캐시 (500개, 5분 TTL)         │
 │  lib/realtime.ts   ── broadcastToChannel() 헬퍼             │
 └───────────────────────────┬─────────────────────────────────┘
@@ -171,20 +189,21 @@ URL: https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
 │  PostgreSQL DB                                              │
 │  ├── users          ── 치지직 계정 정보                      │
 │  ├── chzzk_tokens   ── 치지직 OAuth 토큰                     │
-│  ├── riot_tokens    ── Riot RSO 토큰 (구현 예정)             │
 │  └── tier_cache     ── LoL / TFT 티어 데이터                 │
 │                                                             │
 │  Realtime Broadcast ── tier_updates:{liveId} 채널           │
-│  Realtime Presence  ── 시청자 추적 (OBS 오버레이용)           │
+│  Realtime Presence  ── 시청자 추적 (list / stats 오버레이용)  │
 │  RLS                ── anon key 직접 쓰기 차단               │
 └─────────────────────────────────────────────────────────────┘
-                      
+
 ┌─────────────────────────────────────────────────────────────┐
 │              Web / Next.js (Vercel)                         │
 │                                                             │
-│  /                 ── 랜딩 페이지                            │
-│  /demo             ── 인터랙티브 데모                        │
-│  /overlay/[liveId] ── OBS Browser Source 오버레이            │
+│  /                       ── 랜딩 페이지                      │
+│  /demo                   ── 인터랙티브 데모 (5단계)           │
+│  /overlay/[liveId]?mode=list   ── 시청자 티어 목록 오버레이   │
+│  /overlay/[liveId]?mode=stats  ── 티어 분포 통계 오버레이    │
+│  /overlay/[liveId]?mode=chat   ── 치지직 채팅창 오버레이      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -208,7 +227,6 @@ URL: https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
 |------|------|
 | `storage` | 연동 정보, JWT 저장 (`chrome.storage.local / session`) |
 | `tabs` | OAuth 인증 탭 생성 / 감시 / 닫기 |
-| `webRequest` | 요청 모니터링 |
 
 ---
 
@@ -221,15 +239,18 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 - Riot API 프록시 (API Key 보호, LRU 캐싱)
 - tier_cache CRUD + Realtime broadcast 트리거
 - JWT 기반 요청 인증 (`requireSelf()` 미들웨어)
+- 치지직 WS 연결용 chatChannelId / 액세스 토큰 발급
+- 치지직 닉네임 색상 코드 API 프록시 (CORS 우회, 1시간 서버 캐시)
 
 **캐싱 구조**
 
 | 레이어 | 위치 | 용량 | TTL |
 |--------|------|------|-----|
-| 클라이언트 인메모리 | content.js | 닉네임 단위 | 5분 |
+| 클라이언트 인메모리 | content.js / ChatOverlay | 닉네임 단위 | 5분 |
 | Debounce 배치 | content.js | — | 300ms |
 | 서버 LRU (tier) | tier-store.ts | 500개 | 5분 |
 | 서버 LRU (Riot API) | riot-api.ts | 1000개 | 5분 |
+| 서버 인메모리 (색상 코드) | nickname-color-codes.ts | 전체 | 1시간 |
 
 ---
 
@@ -241,7 +262,6 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 |--------|------|
 | `users` | 치지직 채널 ID / 닉네임. `chzzk_channel_name` 인덱스로 빠른 조회 |
 | `chzzk_tokens` | 치지직 OAuth 액세스 / 리프레시 토큰 (users와 1:1) |
-| `riot_tokens` | Riot RSO 토큰 (구현 예정, 테이블 선행 생성) |
 | `tier_cache` | LoL / TFT 티어 데이터. `(chzzk_channel_id, game_type)` UNIQUE |
 
 **RLS (Row Level Security)**
@@ -251,8 +271,8 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 - 서버는 `service_role` 키로 RLS 우회, 쓰기는 서버 API 경유만 허용
 
 **Realtime**
-- Broadcast 방식 — 서버가 명시적으로 이벤트 push, 클라이언트가 채널 구독으로 수신
-- Presence — 동일 채널에서 시청자 실시간 추적 (OBS 오버레이용)
+- Broadcast — 서버가 명시적으로 이벤트 push, 클라이언트가 채널 구독으로 수신
+- Presence — 동일 채널에서 시청자 실시간 추적 (list / stats 오버레이용)
 - 채널명: `tier_updates:{liveId}`
 
 ---
@@ -261,13 +281,24 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 
 | 페이지 | 설명 |
 |--------|------|
-| `/` | 랜딩 페이지. MockChat 컴포넌트로 실제 채팅 배지 미리보기, 기능 소개 |
-| `/demo` | 5단계 스크롤 잠금 인터랙티브 데모. 설치 없이 전체 플로우 체험 가능 |
-| `/overlay/[liveId]` | OBS Browser Source 전용. Realtime Presence 구독, 배경 투명 |
+| `/` | 랜딩 페이지. MockChat 컴포넌트로 실제 채팅 배지 미리보기 |
+| `/demo` | 5단계 스크롤 잠금 인터랙티브 데모 |
+| `/overlay/[liveId]?mode=list` | OBS용 시청자 티어 배지 목록. Realtime Presence 구독 |
+| `/overlay/[liveId]?mode=stats` | OBS용 티어 분포 통계 바차트. Realtime Presence 구독 |
+| `/overlay/[liveId]?mode=chat` | OBS용 치지직 채팅창 완전 재현. Chzzk WS + Realtime Broadcast |
 
-**MockChat 컴포넌트**
-- 실제 배지 스타일을 그대로 재현 (tier 엠블럼, hover 툴팁)
-- `createPortal`로 툴팁을 `document.body`에 마운트 — transform 컨텍스트 탈출
+**채팅 오버레이 닉네임 색상 시스템**
+
+치지직 JS 번들에서 역엔지니어링한 색상 로직을 그대로 재현합니다.
+
+| 코드 | 처리 방식 |
+|------|----------|
+| 없음 / `CC000` | `sum(charCodes(userIdHash + chatChannelId)) % 40` → 40색 다크 팔레트 |
+| `CC001~CC020` | `/api/chzzk/nickname-color-codes` API에서 동적으로 조회 |
+| `CD001~CD040` | 구독 고정색 (정적 맵) |
+| `SG001~SG005` | tier2 그라데이션 — CSS `background-clip: text` |
+| `SH001~SH005` | tier2 하이라이트 (solid) |
+| `SS001` | tier2 스텔스 (transparent) |
 
 ---
 
@@ -294,7 +325,7 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 
 티어 변경 시:
   → invalidateTierCache() → 서버 LRU 즉시 삭제
-  → Realtime broadcast  → content.js 해당 닉네임만 선택적 무효화
+  → Realtime broadcast    → content.js / ChatOverlay 해당 닉네임만 선택적 무효화
 ```
 
 ---
@@ -323,24 +354,30 @@ Node.js + Fastify로 구축된 백엔드 서버입니다. Railway에 상시 구�
 ## OBS 오버레이 설정 (스트리머용)
 
 1. OBS Studio → 소스 추가 → 브라우저
-2. URL 입력
+2. 아래 URL 중 원하는 것 입력 (`{liveId}` = 방송 URL에서 복사)
 
 ```
-# 티어 분포 통계 바차트
+# 시청자 티어 목록
+https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=list
+
+# 티어 분포 통계
 https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=stats
+
+# 채팅창 (티어 배지 포함)
+https://chzzk-riot-tier-tracker-web.vercel.app/overlay/{liveId}?mode=chat
 ```
 
-3. `{liveId}` = 현재 방송 URL `chzzk.naver.com/live/{liveId}`에서 복사
-4. 너비 / 높이 설정 (예: 300 x 600)
-5. 배경 투명 체크
+3. 너비 / 높이 설정 (채팅 오버레이 권장: 400 x 600 이상)
+4. 배경 투명 체크
 
-> 익스텐션이 설치되어 있고, 치지직 로그인 상태이며, 티어를 공개로 설정한 시청자만 오버레이에 표시됩니다.
+> list / stats: 익스텐션 설치 + 티어 공개 설정 유저만 표시됩니다.  
+> chat: 채팅에 참여한 모든 유저를 표시하며, 익스텐션 연동 유저에게는 티어 배지가 추가됩니다.
 
 ---
 
 ## 설치 방법
 
-Chrome 웹 스토어에서 다운 받으시면 됩니다!
+Chrome 웹 스토어에서 다운 받으세요.
 
 https://chromewebstore.google.com/detail/chzzk-riot-tier-tracker/nblnplkaaiadgbagcmolcfbodpjfekgd
 
@@ -355,7 +392,7 @@ https://chromewebstore.google.com/detail/chzzk-riot-tier-tracker/nblnplkaaiadgba
 | **DB** | Supabase (PostgreSQL), Supabase Realtime |
 | **인증** | 치지직 OAuth, JWT (HS256) |
 | **Web** | Next.js 15 (App Router), TypeScript, Tailwind CSS |
-| **외부 API** | Riot Games API (LoL / TFT) |
+| **외부 API** | Riot Games API (LoL / TFT), 치지직 WebSocket / REST API |
 | **배포** | Railway (서버), Vercel (웹) |
 
 ---
