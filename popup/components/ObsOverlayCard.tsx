@@ -72,6 +72,18 @@ export default function ObsOverlayCard() {
           <p className="obs-no-channel">치지직 방송 페이지에서 열어주세요</p>
         ) : (
           <>
+            <div className="obs-section-header">
+              <span className="obs-section-label">채팅창</span>
+              <span className="obs-section-hint">자유 크기</span>
+            </div>
+            <UrlRow label="채팅 오버레이" url={`${OVERLAY_BASE}/${channelId}?mode=chat`} />
+
+            <div className="obs-section-divider" />
+
+            <div className="obs-section-header">
+              <span className="obs-section-label">통계</span>
+              <span className="obs-section-hint">너비 400px+</span>
+            </div>
             <div className="obs-tab-row">
               <button
                 className={`obs-tab${game === 'lol' ? ' active' : ''}`}

@@ -42,7 +42,7 @@ export default function SettingsPage() {
         <div className="card-content">
           <div className="about-info">
             <span className="about-label">Version</span>
-            <span className="about-value">1.1.1</span>
+            <span className="about-value">{chrome.runtime.getManifest().version}</span>
           </div>
         </div>
       </div>

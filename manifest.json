@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chzzk Riot Tier Tracker",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "치지직 채팅창에 LoL/TFT 티어를 표시합니다",
   "icons": {
     "16": "images/logo_without_text.png",

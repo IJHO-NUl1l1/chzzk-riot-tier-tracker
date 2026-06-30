@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import SearchResult from '../SearchResult';
 import VerifyCard from '../VerifyCard';
 import { useSearch } from '../../hooks/useSearch';
 import { useVerify, verifiedKey } from '../../hooks/useVerify';
 import { useChzzkAuth } from '../../hooks/useChzzkAuth';
-import { useRiotAuth } from '../../hooks/useRiotAuth';
+// @ts-ignore
 import config from '../../../js/config.js';
 import type { GameType } from '../../types';
 
@@ -35,7 +35,7 @@ function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
   useEffect(() => {
     const storageKey = gameType === 'lol' ? 'summonerData' : 'tftData';
     chrome.storage.local.get([storageKey, verifiedKey(gameType)], (r) => {
-      const d = r[storageKey];
+      const d = r[storageKey] as { gameName?: string; tagLine?: string; region?: string } | undefined;
       if (d) {
         setGameName(d.gameName ?? '');
         setTagLine(d.tagLine ?? '');
@@ -104,7 +104,7 @@ function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
           {error && <div className="status-message error">{error}</div>}
           {result && !error && (
             <div className="status-message success">
-              {isLol ? 'Summoner found!' : 'TFT info found!'}
+              Summoner found!
             </div>
           )}
         </div>
