@@ -119,9 +119,6 @@ function GameSearch({ gameType, onVerifyDone }: GameSearchProps) {
           </div>
         ) : (
           <VerifyCard
-            gameType={gameType}
-            puuid={result.puuid}
-            region={region}
             state={state}
             iconId={iconId}
             error={verifyError}

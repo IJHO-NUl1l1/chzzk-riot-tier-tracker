@@ -1,13 +1,9 @@
 import React from 'react';
-import type { GameType } from '../types';
 import type { VerifyState } from '../hooks/useVerify';
 
 const DDRAGON_VERSION = '14.24.1';
 
 interface Props {
-  gameType: GameType;
-  puuid: string;
-  region: string;
   state: VerifyState;
   iconId: number | null;
   error: string | null;
@@ -17,7 +13,7 @@ interface Props {
 }
 
 export default function VerifyCard({
-  gameType, puuid, region, state, iconId, error,
+  state, iconId, error,
   onStart, onConfirm, onCancel,
 }: Props) {
   if (state === 'done') return null;
