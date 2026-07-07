@@ -10,7 +10,6 @@ interface Props {
 export default function SearchResult({ gameType, data }: Props) {
   if (!data) return null;
 
-  const queueType = gameType === 'lol' ? 'RANKED_SOLO_5x5' : 'RANKED_TFT';
   const tier = data.tier ?? 'UNRANKED';
   const rank = data.rank ?? '';
   const totalGames = data.wins + data.losses;

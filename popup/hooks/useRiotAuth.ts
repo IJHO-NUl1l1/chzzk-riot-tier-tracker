@@ -65,7 +65,6 @@ export function useRiotAuth(auth: ChzzkAuth | null) {
     const entry = {
       riotPuuid: data.puuid,
       gameType,
-      queueType: gameType === 'lol' ? 'RANKED_SOLO_5x5' : 'RANKED_TFT',
       tier: data.tier ?? null,
       rank: data.rank ?? null,
       leaguePoints: data.lp ?? 0,
